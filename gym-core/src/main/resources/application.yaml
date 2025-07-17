@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: gym-core
+data:
+  traineeData: src/main/resources/data/traineeData.json
+  trainerData: src/main/resources/data/trainerData.json
+  trainingData: src/main/resources/data/trainingData.json
+  trainingTypeData: src/main/resources/data/trainingTypeData.json
