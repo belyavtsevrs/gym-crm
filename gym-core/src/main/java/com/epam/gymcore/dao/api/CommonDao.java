@@ -6,6 +6,7 @@ import java.util.Optional;
 public interface CommonDao<E,ID> {
     List<E> findAll();
     Optional<E> findById(ID id);
-    void save(E e);
+    E save(E e);
     void remove(ID id);
+    E update(E e);
 }

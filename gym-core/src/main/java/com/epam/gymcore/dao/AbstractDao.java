@@ -1,38 +1,83 @@
 package com.epam.gymcore.dao;
 
 import com.epam.gymcore.dao.api.CommonDao;
-import com.epam.gymcore.dao.storage.InMemoryStorage;
-import com.epam.gymcore.domain.model.Identifiable;
-import lombok.AllArgsConstructor;
+import com.epam.gymcore.domain.entity.AbstractEntity;
+import jakarta.persistence.EntityManager;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import java.util.List;
 import java.util.Optional;
 
-@AllArgsConstructor
-public abstract class AbstractDao<E extends Identifiable<Long>> implements CommonDao<E,Long> {
-    protected InMemoryStorage<E> storage;
 
-    @Override
-    public List<E> findAll(){
-        return storage.getStorage().values().stream().toList();
+public abstract class AbstractDao<E extends AbstractEntity, ID> implements CommonDao<E, ID> {
+    protected final EntityManager entityManager;
+    protected final Class<E> entityType;
+
+    protected AbstractDao(EntityManager entityManager, Class<E> entityType) {
+        this.entityManager = entityManager;
+        this.entityType = entityType;
     }
 
     @Override
-    public Optional<E> findById(Long aLong) {
-        return Optional.ofNullable(storage.getStorage().get(aLong));
-    }
-
-    @Override
-    public void remove(Long aLong) {
-        storage.getStorage().remove(aLong);
-    }
-
-    @Override
-    public void save(E e) {
-        if (e.getId() == null) {
-            Long nextId = storage.getNextIndex();
-            e.setId(nextId);
+    public List<E> findAll() {
+        Session session = entityManager.unwrap(Session.class);
+        try {
+            return session.createQuery("FROM " + entityType.getSimpleName(),entityType).getResultList();
+        }catch (Exception e){
+            e.printStackTrace();
+            return List.of();
         }
-        storage.getStorage().put(e.getId(), e);
+    }
+
+    @Override
+    public Optional<E> findById(ID aID) {
+        Session session = entityManager.unwrap(Session.class);
+        try {
+            return Optional.ofNullable(session.get(entityType, aID));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
+
+    }
+
+    @Override
+    public E save(E e) {
+        Session session = entityManager.unwrap(Session.class);
+        try {
+            session.persist(e);
+            session.flush();
+            return e;
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to save entity: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public void remove(ID aID) {
+        Session session = entityManager.unwrap(Session.class);
+        try {
+            E entity = session.get(entityType, aID);
+            if (entity != null) {
+                session.remove(entity);
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public E update(E e) {
+        Session session = entityManager.unwrap(Session.class);
+        try {
+            session.merge(e);
+            session.flush();
+            return e;
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to save entity: " + ex.getMessage(), ex);
+        }
     }
 }
+

@@ -1,35 +1,23 @@
 package com.epam.gymcore.util;
 
-import com.epam.gymcore.domain.model.User;
+import com.epam.gymcore.domain.entity.User;
 
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
 
 public class UserUtil {
-    public static String createUsername(User user, List<? extends User> allUsers){
-        String firstName = user.getFirstName();
-        String lastName = user.getLastName();
-        StringBuilder username = new StringBuilder();
-        username.append(firstName);
-        username.append(".");
-        username.append(lastName);
-        String baseUsername = user.getFirstName() + "." + user.getLastName();
+    public static String createUsername(User user, Function<String, Boolean> isUsernameTaken) {
+        String base = user.getFirstName().toLowerCase() + "." + user.getLastName().toLowerCase();
+        String candidate = base;
+        int suffix = 1;
 
-        if (allUsers == null || allUsers.isEmpty()) {
-            return baseUsername;
+        while (isUsernameTaken.apply(candidate)) {
+            candidate = base + "#" + suffix;
+            suffix++;
         }
 
-        long count = allUsers.stream()
-                .filter(u -> u.getUsername() != null)
-                .filter(u -> u.getUsername().equalsIgnoreCase(baseUsername)
-                        || u.getUsername().toLowerCase().startsWith(baseUsername.toLowerCase() + "#"))
-                .count();
-
-        if (count == 0) {
-            return baseUsername;
-        } else {
-            return baseUsername + "#" + (count + 1);
-        }
+        return candidate;
     }
 
     public static String generatePassword(){
