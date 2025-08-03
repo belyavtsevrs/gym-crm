@@ -6,13 +6,14 @@ import lombok.*;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Getter
 @Entity
 @NoArgsConstructor
+@ToString
 @Table(name = "trainings")
 public class Training extends AbstractEntity {
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "trainer_id", nullable = false)
     private Trainer trainer;
@@ -32,11 +33,28 @@ public class Training extends AbstractEntity {
     @Column(name = "training_duration", nullable = false)
     private Duration duration;
 
+    public Training(TrainingType trainingType, Duration duration, LocalDateTime trainingDate) {
+        this.trainingType = trainingType;
+        this.duration = duration;
+        this.trainingDate = trainingDate;
+    }
+
     public Training(Trainer trainer, Trainee trainee, TrainingType trainingType, LocalDateTime trainingDate, Duration duration) {
         this.trainer = trainer;
         this.trainee = trainee;
         this.trainingType = trainingType;
         this.trainingDate = trainingDate;
         this.duration = duration;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Training training)) return false;
+        return Objects.equals(trainer, training.trainer) && Objects.equals(trainee, training.trainee) && Objects.equals(trainingType, training.trainingType) && Objects.equals(trainingDate, training.trainingDate) && Objects.equals(duration, training.duration);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(trainer, trainee, trainingType, trainingDate, duration);
     }
 }

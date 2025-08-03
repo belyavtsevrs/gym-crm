@@ -11,6 +11,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
+@ToString
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class User extends AbstractEntity {
     protected String firstName;
@@ -27,9 +28,9 @@ public abstract class User extends AbstractEntity {
         this.isActive = isActive;
     }
 
-    public User(String lastName, String firstName) {
-        this.lastName = lastName;
+    public User(String firstName, String lastName) {
         this.firstName = firstName;
+        this.lastName = lastName;
     }
 
     @PrePersist

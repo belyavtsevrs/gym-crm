@@ -1,7 +1,9 @@
 package com.epam.gymcore.service;
 
+import com.epam.gymcore.domain.entity.Training;
 import com.epam.gymcore.domain.entity.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,4 +19,6 @@ public interface UserService<E extends User> {
     void deleteByUsername(String username);
 
     List<E> findAllActive();
+
+    List<Training> getUsersByUsernameAndCriteria(String username, LocalDateTime from, LocalDateTime to);
 }

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class TrainerDao extends AbstractUserDao<Trainer>{
 
-    protected TrainerDao(EntityManager entityManager) {
+    public  TrainerDao(EntityManager entityManager) {
         super(entityManager, Trainer.class);
     }
 

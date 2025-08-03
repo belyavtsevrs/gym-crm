@@ -1,6 +1,7 @@
 package com.epam.gymcore.service.impl;
 
 import com.epam.gymcore.dao.AbstractUserDao;
+import com.epam.gymcore.domain.entity.Training;
 import com.epam.gymcore.domain.entity.User;
 import com.epam.gymcore.service.UserService;
 import com.epam.gymcore.service.api.Creator;
@@ -10,10 +11,10 @@ import com.epam.gymcore.service.api.Updater;
 import com.epam.gymcore.util.UserUtil;
 import jakarta.transaction.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@Transactional
 public abstract class AbstractUserService<E extends User> implements UserService<E>, Creator<E>, Retriever<E, Long>, Updater<E>, Deleter<Long> {
     protected final AbstractUserDao<E> dao;
 
@@ -32,7 +33,9 @@ public abstract class AbstractUserService<E extends User> implements UserService
         entity.setUsername(generatedUsername);
         entity.setPassword(generatedPassword);
 
-        return dao.save(entity);
+        Optional<E> data = dao.save(entity);
+
+        return data.get();
     }
 
     @Override
@@ -83,5 +86,10 @@ public abstract class AbstractUserService<E extends User> implements UserService
     @Override
     public List<E> findAllActive() {
         return dao.findAllActive();
+    }
+
+    @Override
+    public List<Training> getUsersByUsernameAndCriteria(String username, LocalDateTime from, LocalDateTime to) {
+        return dao.getUsersByUsernameAndCriteria(username,from,to);
     }
 }

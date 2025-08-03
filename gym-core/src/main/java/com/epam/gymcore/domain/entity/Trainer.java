@@ -3,8 +3,7 @@ package com.epam.gymcore.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Setter
 @Getter
@@ -13,15 +12,20 @@ import java.util.List;
 @PrimaryKeyJoinColumn(name = "user_id")
 @Table(name = "trainers")
 public class Trainer extends User {
-
-    @Column(name = "specialization")
-    private String specialization;
-
     @OneToMany(mappedBy = "trainer", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Training> trainings = new ArrayList<>();
+    private Set<Training> trainings = new HashSet<>();
 
-    public Trainer(String lastName, String firstName, String specialization) {
-        super(lastName, firstName);
-        this.specialization = specialization;
+    @ManyToMany(mappedBy = "trainers")
+    private Set<Trainee> trainees = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(name = "trainer_specializations",
+            joinColumns = @JoinColumn(name = "trainer_id"),
+            inverseJoinColumns = @JoinColumn(name = "training_type_id")
+    )
+    private Set<TrainingType> specializations = new HashSet<>();
+
+    public Trainer(String firstName, String lastName) {
+        super(firstName, lastName);
     }
 }

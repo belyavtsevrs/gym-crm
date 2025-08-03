@@ -4,8 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -21,11 +22,31 @@ public class Trainee extends User {
     private String address;
 
     @OneToMany(mappedBy = "trainee", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Training> trainings = new ArrayList<>();
+    private Set<Training> trainings = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "trainee_trainer",
+            joinColumns = @JoinColumn(name = "trainee_id"),
+            inverseJoinColumns = @JoinColumn(name = "trainer_id")
+    )
+    private Set<Trainer> trainers = new HashSet<>();
 
     public Trainee(String lastName, String firstName, LocalDate dateOfBirth, String address) {
         super(lastName, firstName);
         this.dateOfBirth = dateOfBirth;
         this.address = address;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Trainee trainee)) return false;
+        if (!super.equals(o)) return false;
+        return Objects.equals(dateOfBirth, trainee.dateOfBirth) && Objects.equals(address, trainee.address) && Objects.equals(trainings, trainee.trainings) && Objects.equals(trainers, trainee.trainers);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), dateOfBirth, address, trainings, trainers);
     }
 }

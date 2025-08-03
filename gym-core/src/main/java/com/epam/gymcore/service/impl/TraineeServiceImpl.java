@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Transactional
 public class TraineeServiceImpl extends AbstractUserService<Trainee> implements TraineeService {
 
     protected TraineeServiceImpl(AbstractUserDao<Trainee> dao) {

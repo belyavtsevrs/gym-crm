@@ -1,8 +1,6 @@
 package com.epam.gymcore;
 
-
 import com.epam.gymcore.dao.TrainerDao;
-import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.service.TrainerService;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,7 +9,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +27,7 @@ public class TrainerServiceIntegrationTest {
 
     @BeforeEach
     void init() {
-        trainer = new Trainer("Che","Vasily","Bodybuilding"
+        trainer = new Trainer("Vasily","Che"
         );
     }
 
@@ -45,7 +42,7 @@ public class TrainerServiceIntegrationTest {
         assertTrue(res.isPresent());
         assertEquals("Vasily", res.get().getFirstName());
 
-        Trainer trainer2 = new Trainer("Che","Vasily","Yoga");
+        Trainer trainer2 = new Trainer("Vasily","Che" );
 
         Trainer saved2 = trainerService.create(trainer2);
 
@@ -90,7 +87,9 @@ public class TrainerServiceIntegrationTest {
         Optional<Trainer> res = trainerService.findById(saved.getId());
 
         assertTrue(res.isPresent());
-        assertEquals("Vasily", res.get().getFirstName());
+        Trainer trainer = res.get();
+
+        assertEquals("Vasily", trainer.getFirstName());
     }
 
     @Test
@@ -106,13 +105,11 @@ public class TrainerServiceIntegrationTest {
     void shouldUpdateTrainee() {
         Trainer saved = trainerService.create(trainer);
 
-        saved.setSpecialization("Health coach");
         trainerService.update(saved);
 
         var res = trainerService.findById(saved.getId());
 
         assertTrue(res.isPresent());
-        assertTrue(res.get().getSpecialization().equalsIgnoreCase("Health coach"));
     }
 
     @Test
@@ -133,4 +130,5 @@ public class TrainerServiceIntegrationTest {
 
         assertFalse(result.isEmpty());
     }
+
 }

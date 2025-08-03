@@ -2,6 +2,7 @@ package com.epam.gymcore;
 
 import com.epam.gymcore.dao.TraineeDao;
 import com.epam.gymcore.domain.entity.Trainee;
+import com.epam.gymcore.domain.entity.Training;
 import com.epam.gymcore.service.TraineeService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -153,5 +155,12 @@ public class TraineeServiceIntegrationTest {
         List<Trainee> result = traineeService.findAllActive();
 
         assertFalse(result.isEmpty());
+    }
+
+    @Test
+    void shouldFindTrainingsByUsernameAndCriteria(){
+        List<Training> res = traineeService.getUsersByUsernameAndCriteria("rodion.b", LocalDateTime.now(), LocalDateTime.now().plusMinutes(64));
+        assertFalse(res.isEmpty());
+
     }
 }

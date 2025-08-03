@@ -3,13 +3,14 @@ package com.epam.gymcore.dao;
 import com.epam.gymcore.dao.api.CommonDao;
 import com.epam.gymcore.domain.entity.AbstractEntity;
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import java.util.List;
 import java.util.Optional;
 
-
+@Transactional
 public abstract class AbstractDao<E extends AbstractEntity, ID> implements CommonDao<E, ID> {
     protected final EntityManager entityManager;
     protected final Class<E> entityType;
@@ -21,62 +22,47 @@ public abstract class AbstractDao<E extends AbstractEntity, ID> implements Commo
 
     @Override
     public List<E> findAll() {
-        Session session = entityManager.unwrap(Session.class);
-        try {
-            return session.createQuery("FROM " + entityType.getSimpleName(),entityType).getResultList();
-        }catch (Exception e){
-            e.printStackTrace();
-            return List.of();
-        }
+        String sql = "SELECT e FROM " + entityType.getSimpleName() + " e";
+        return entityManager.createQuery(sql).getResultList();
     }
 
     @Override
-    public Optional<E> findById(ID aID) {
-        Session session = entityManager.unwrap(Session.class);
+    public Optional<E> findById(ID Id) {
+       return Optional.ofNullable(entityManager.find(entityType, Id));
+    }
+
+    @Override
+    public Optional<E> save(E e) {
         try {
-            return Optional.ofNullable(session.get(entityType, aID));
-        } catch (Exception e) {
-            e.printStackTrace();
+            if(e.getId() == null){
+                entityManager.persist(e);
+            }else {
+                e = entityManager.merge(e);
+            }
+            return Optional.of(e);
+        }catch (Exception ex){
+            ex.printStackTrace();
             return Optional.empty();
-        }
-
-    }
-
-    @Override
-    public E save(E e) {
-        Session session = entityManager.unwrap(Session.class);
-        try {
-            session.persist(e);
-            session.flush();
-            return e;
-        } catch (Exception ex) {
-            throw new RuntimeException("Failed to save entity: " + ex.getMessage(), ex);
         }
     }
 
     @Override
     public void remove(ID aID) {
-        Session session = entityManager.unwrap(Session.class);
-        try {
-            E entity = session.get(entityType, aID);
-            if (entity != null) {
-                session.remove(entity);
-            }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        E e = entityManager.find(entityType,aID);
+        if(e == null){
+            entityManager.merge(e);
+        }else
+            entityManager.remove(e);
     }
 
     @Override
     public E update(E e) {
-        Session session = entityManager.unwrap(Session.class);
         try {
-            session.merge(e);
-            session.flush();
-            return e;
+
+            E merged = entityManager.merge(e);
+            return merged;
         } catch (Exception ex) {
-            throw new RuntimeException("Failed to save entity: " + ex.getMessage(), ex);
+            throw new RuntimeException(ex.getMessage(), ex);
         }
     }
 }
