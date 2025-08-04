@@ -19,12 +19,12 @@ public class TrainingServiceImpl implements TrainingService {
 
     @Override
     public List<Training> getTrainingByTrainee(Long traineeId) {
-        return List.of();
+        return trainingDao.getTrainingByTrainee(traineeId);
     }
 
     @Override
     public List<Training> getTrainingByTrainer(Long trainerId) {
-        return List.of();
+        return trainingDao.getTrainingByTrainee(trainerId);
     }
 
     @Override

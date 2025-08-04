@@ -2,7 +2,7 @@ package com.epam.gymcore.dao;
 
 import com.epam.gymcore.domain.entity.TrainingType;
 import jakarta.persistence.EntityManager;
-import org.hibernate.Session;
+import jakarta.persistence.NoResultException;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -15,17 +15,17 @@ public class TrainingTypeDto extends AbstractDao<TrainingType, Long> {
     }
 
     public Optional<TrainingType> findByTitle(String type){
-        Session session = entityManager.unwrap(Session.class);
         try {
-            TrainingType trainingType =
-                    session.createQuery("SELECT t FROM " + entityType.getSimpleName() + " t WHERE t.name = :type", TrainingType.class)
-                            .setParameter("type", type)
-                            .uniqueResult();
+            TrainingType trainingType = entityManager
+                    .createQuery("SELECT T FROM TrainingType T WHERE T.name = :type", TrainingType.class)
+                    .setParameter("type", type)
+                    .getSingleResult();
 
-            return Optional.ofNullable(trainingType);
-        } catch (Exception e) {
-            e.printStackTrace();
+            return Optional.of(trainingType);
+        } catch (NoResultException e) {
             return Optional.empty();
         }
     }
+
+
 }

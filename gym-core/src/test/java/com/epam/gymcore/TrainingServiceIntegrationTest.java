@@ -15,9 +15,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -58,5 +58,12 @@ public class TrainingServiceIntegrationTest {
 
         assertNotNull(created);
         assertNotNull(created.getId());
+    }
+
+    @Test
+    void shouldFindByTrainee(){
+        List<Training> trainingList = trainingService.getTrainingByTrainee(1l);
+
+        assertNotEquals(0,trainingList.size());
     }
 }
