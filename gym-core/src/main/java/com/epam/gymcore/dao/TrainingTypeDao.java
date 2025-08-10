@@ -8,18 +8,19 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public class TrainingTypeDto extends AbstractDao<TrainingType, Long> {
+public class TrainingTypeDao extends AbstractDao<TrainingType, Long> {
 
-    public TrainingTypeDto(EntityManager entityManager) {
+    public TrainingTypeDao(EntityManager entityManager) {
         super(entityManager, TrainingType.class);
     }
 
-    public Optional<TrainingType> findByTitle(String type){
+    public Optional<TrainingType> findByName(String type){
         try {
             TrainingType trainingType = entityManager
                     .createQuery("SELECT T FROM TrainingType T WHERE T.name = :type", TrainingType.class)
-                    .setParameter("type", type)
+                    .setParameter("type", type.toUpperCase())
                     .getSingleResult();
+
 
             return Optional.of(trainingType);
         } catch (NoResultException e) {

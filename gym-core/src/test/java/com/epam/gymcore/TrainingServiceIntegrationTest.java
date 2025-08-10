@@ -1,6 +1,6 @@
 package com.epam.gymcore;
 
-import com.epam.gymcore.dao.TrainingTypeDto;
+import com.epam.gymcore.dao.TrainingTypeDao;
 import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.domain.entity.Training;
@@ -30,14 +30,14 @@ public class TrainingServiceIntegrationTest {
     private TrainerService trainerService;
 
     @Autowired
-    private TrainingTypeDto trainingTypeDto;
+    private TrainingTypeDao trainingTypeDao;
 
     @Test
     void shouldBeCreated(){
-        TrainingType trainingType = trainingTypeDto.findByTitle("bodybuilding")
+        TrainingType trainingType = trainingTypeDao.findByName("bodybuilding")
                 .orElseGet(() -> {
                     TrainingType newType = new TrainingType("bodybuilding");
-                    trainingTypeDto.save(newType);
+                    trainingTypeDao.save(newType);
                     return newType;
                 });
 

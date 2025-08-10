@@ -21,4 +21,11 @@ public class TrainingType extends AbstractEntity{
     public TrainingType(String name) {
         this.name = name;
     }
+
+    @PrePersist
+    private void init(){
+        if(name != null){
+            name = name.toUpperCase();
+        }
+    }
 }

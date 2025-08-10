@@ -32,18 +32,14 @@ public abstract class AbstractDao<E extends AbstractEntity, ID> implements Commo
     }
 
     @Override
-    public Optional<E> save(E e) {
-        try {
-            if(e.getId() == null){
-                entityManager.persist(e);
-            }else {
-                e = entityManager.merge(e);
-            }
-            return Optional.of(e);
-        }catch (Exception ex){
-            ex.printStackTrace();
-            return Optional.empty();
+    public  E  save(E e) {
+        if (e.getId() == null) {
+            entityManager.persist(e);
+        } else {
+            e = entityManager.merge(e);
         }
+        return e;
+
     }
 
     @Override
@@ -58,7 +54,6 @@ public abstract class AbstractDao<E extends AbstractEntity, ID> implements Commo
     @Override
     public E update(E e) {
         try {
-
             E merged = entityManager.merge(e);
             return merged;
         } catch (Exception ex) {

@@ -1,7 +1,6 @@
 package com.epam.gymcore.service.impl;
 
 import com.epam.gymcore.dao.TrainingDao;
-import com.epam.gymcore.dao.TrainingTypeDto;
 import com.epam.gymcore.domain.entity.Training;
 import com.epam.gymcore.service.TrainingService;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,7 @@ public class TrainingServiceImpl implements TrainingService {
 
     @Override
     public Training create(Training entity) {
-        return trainingDao.save(entity).get();
+        return trainingDao.save(entity);
     }
 
     @Override

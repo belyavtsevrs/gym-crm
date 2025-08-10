@@ -10,11 +10,13 @@ import com.epam.gymcore.service.api.Retriever;
 import com.epam.gymcore.service.api.Updater;
 import com.epam.gymcore.util.UserUtil;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 public abstract class AbstractUserService<E extends User> implements UserService<E>, Creator<E>, Retriever<E, Long>, Updater<E>, Deleter<Long> {
     protected final AbstractUserDao<E> dao;
 
@@ -33,9 +35,8 @@ public abstract class AbstractUserService<E extends User> implements UserService
         entity.setUsername(generatedUsername);
         entity.setPassword(generatedPassword);
 
-        Optional<E> data = dao.save(entity);
-
-        return data.get();
+        log.info("(AbstractUserService) entity before save: = {}",entity);
+        return dao.save(entity);
     }
 
     @Override

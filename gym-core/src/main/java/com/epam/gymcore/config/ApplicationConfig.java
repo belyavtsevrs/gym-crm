@@ -1,6 +1,6 @@
 package com.epam.gymcore.config;
 
-import com.epam.gymcore.dao.TrainingTypeDto;
+import com.epam.gymcore.dao.TrainingTypeDao;
 import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.domain.entity.Training;
@@ -19,12 +19,12 @@ import java.util.List;
 
 @Configuration
 public class ApplicationConfig implements CommandLineRunner {
-    private final TrainingTypeDto trainingTypeDto;
+    private final TrainingTypeDao trainingTypeDao;
     private final TrainerService trainerService;
     private final TraineeService traineeService;
     private final TrainingService trainingService;
-    public ApplicationConfig(TrainingTypeDto trainingTypeDto, TrainerService trainerService, TraineeService traineeService, TrainingService trainingService) {
-        this.trainingTypeDto = trainingTypeDto;
+    public ApplicationConfig(TrainingTypeDao trainingTypeDao, TrainerService trainerService, TraineeService traineeService, TrainingService trainingService) {
+        this.trainingTypeDao = trainingTypeDao;
         this.trainerService = trainerService;
         this.traineeService = traineeService;
         this.trainingService = trainingService;
@@ -43,7 +43,7 @@ public class ApplicationConfig implements CommandLineRunner {
         );
 
         for (TrainingType type : trainingTypes) {
-            trainingTypeDto.save(type);
+            trainingTypeDao.save(type);
         }
 
         List<Trainee> trainees =
@@ -82,7 +82,7 @@ public class ApplicationConfig implements CommandLineRunner {
         trainer2.getTrainees().add(trainees.get(4));
         traineeService.update(trainees.get(4));
 
-        TrainingType Bodybuilding = trainingTypeDto.findByTitle("Bodybuilding").get();
+        TrainingType Bodybuilding = trainingTypeDao.findByName("Bodybuilding").get();
 
         Trainee trainee = trainees.get(0);
         Training training =

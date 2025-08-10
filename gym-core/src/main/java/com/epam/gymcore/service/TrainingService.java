@@ -1,5 +1,6 @@
 package com.epam.gymcore.service;
 
+import com.epam.gymcore.domain.dto.TrainerRegistrationDto;
 import com.epam.gymcore.domain.entity.Training;
 import com.epam.gymcore.service.api.Creator;
 import com.epam.gymcore.service.api.Retriever;
