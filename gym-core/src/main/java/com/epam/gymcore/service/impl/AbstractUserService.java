@@ -51,7 +51,9 @@ public abstract class AbstractUserService<E extends User> implements UserService
 
     @Override
     public Optional<E> findById(Long aLong) {
-        return dao.findById(aLong);
+        Optional<E> data = dao.findById(aLong);
+        log.info("(AbstractUserService) entity with id: = {}",data);
+        return data;
     }
 
     @Override

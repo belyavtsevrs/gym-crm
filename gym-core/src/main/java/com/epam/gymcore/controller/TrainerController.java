@@ -1,16 +1,13 @@
 package com.epam.gymcore.controller;
 
 import com.epam.gymcore.controller.api.TrainerApi;
-import com.epam.gymcore.domain.dto.AuthDto;
 import com.epam.gymcore.domain.dto.TrainerRegistrationDto;
 import com.epam.gymcore.domain.dto.UserDto;
+import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.service.TrainerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -36,5 +33,17 @@ public class TrainerController implements TrainerApi {
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
         return ResponseEntity.ok().build();
     }
+
+    @Override
+    @PutMapping("/update-login")
+    public ResponseEntity<Void> updateLogin(String username, String oldPassword, String newPassword) {
+        Trainer trainer = trainerService.findByUsernameAndPassword(username,oldPassword)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+
+        trainerService.updatePasswordByUsername(trainer.getUsername(),newPassword);
+
+        return ResponseEntity.ok().build();
+    }
+
 
 }
