@@ -1,6 +1,7 @@
 package com.epam.gymcore.controller;
 
 import com.epam.gymcore.controller.api.TraineeApi;
+import com.epam.gymcore.domain.dto.TraineeProfileDto;
 import com.epam.gymcore.domain.dto.TraineeRegistrationDto;
 import com.epam.gymcore.domain.dto.UserDto;
 import com.epam.gymcore.domain.entity.Trainee;
@@ -43,6 +44,13 @@ public class TraineeController implements TraineeApi {
         traineeService.updatePasswordByUsername(trainee.getUsername(),newPassword);
 
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @GetMapping("/get-profile")
+    public ResponseEntity<TraineeProfileDto> getTraineeProfile(String username) {
+        
+        return ResponseEntity.ok(traineeService.getTraineeProfile(username));
     }
 
 

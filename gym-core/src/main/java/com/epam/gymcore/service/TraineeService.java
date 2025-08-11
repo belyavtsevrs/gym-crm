@@ -1,5 +1,6 @@
 package com.epam.gymcore.service;
 
+import com.epam.gymcore.domain.dto.TraineeProfileDto;
 import com.epam.gymcore.domain.dto.TraineeRegistrationDto;
 import com.epam.gymcore.domain.dto.TrainerRegistrationDto;
 import com.epam.gymcore.domain.dto.UserDto;
@@ -13,4 +14,5 @@ public interface TraineeService extends
         Updater<Trainee>,UserService<Trainee>
 {
     UserDto register(TraineeRegistrationDto dto);
+    TraineeProfileDto getTraineeProfile(String username);
 }
