@@ -1,5 +1,7 @@
 package com.epam.gymcore.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -8,7 +10,8 @@ public record TraineeProfileDto(
         String lastName,
         LocalDate dateOfBirth,
         String address,
-        boolean isActive,
+        @JsonProperty("isActive")
+        Boolean isActive,
         List<TrainerDto> trainersList
 ) {
 }

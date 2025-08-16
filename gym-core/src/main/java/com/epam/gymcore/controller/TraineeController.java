@@ -1,15 +1,15 @@
 package com.epam.gymcore.controller;
 
 import com.epam.gymcore.controller.api.TraineeApi;
-import com.epam.gymcore.domain.dto.TraineeProfileDto;
-import com.epam.gymcore.domain.dto.TraineeRegistrationDto;
-import com.epam.gymcore.domain.dto.UserDto;
+import com.epam.gymcore.domain.dto.*;
 import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.service.TraineeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/trainee/")
@@ -49,8 +49,31 @@ public class TraineeController implements TraineeApi {
     @Override
     @GetMapping("/get-profile")
     public ResponseEntity<TraineeProfileDto> getTraineeProfile(String username) {
-        
         return ResponseEntity.ok(traineeService.getTraineeProfile(username));
+    }
+
+    @Override
+    @PutMapping("/update-profile")
+    public ResponseEntity<TraineeProfileDto> updateTraineeProfile(String username, TraineeUpdateDto dto) {
+        return ResponseEntity.ok(traineeService.updateTraineeProfile(username,dto));
+    }
+
+    @Override
+    @GetMapping("/{username}/available-trainers")
+    public ResponseEntity<List<TrainerDto>> notAssignedTrainers(String username) {
+        return ResponseEntity.ok(traineeService.notAssignedTrainers(username));
+    }
+
+    @Override
+    @PutMapping("/{username}/update-trainee-trainers")
+    public ResponseEntity<List<TrainerDto>> updateTraineeTrainers(String username, List<String> trainersUsername) {
+        return ResponseEntity.ok(traineeService.updateTrainerList(username,trainersUsername));
+    }
+
+    @Override
+    @PatchMapping("/change-status")
+    public ResponseEntity<Void> changeStatus() {
+        return null;
     }
 
 

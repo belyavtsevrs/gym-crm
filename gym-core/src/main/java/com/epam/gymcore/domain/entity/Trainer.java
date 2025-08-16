@@ -28,4 +28,5 @@ public class Trainer extends User {
     public Trainer(String firstName, String lastName) {
         super(firstName, lastName);
     }
+
 }

@@ -2,6 +2,7 @@ package com.epam.gymcore.controller;
 
 import com.epam.gymcore.controller.api.TrainerApi;
 import com.epam.gymcore.domain.dto.TrainerRegistrationDto;
+import com.epam.gymcore.domain.dto.TrainingDto;
 import com.epam.gymcore.domain.dto.UserDto;
 import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.service.TrainerService;
@@ -9,6 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/trainer/")
@@ -43,6 +48,12 @@ public class TrainerController implements TrainerApi {
         trainerService.updatePasswordByUsername(trainer.getUsername(),newPassword);
 
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @GetMapping("/{username}/training-list")
+    public ResponseEntity<List<TrainingDto>> getTrainerTrainingList(String username, LocalDateTime from, LocalDateTime to, String traineeName) {
+        return ResponseEntity.ok(trainerService.trainerTrainingsList(username,from,to,traineeName));
     }
 
 

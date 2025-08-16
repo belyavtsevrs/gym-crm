@@ -6,6 +6,7 @@ import com.epam.gymcore.domain.dto.TrainerRegistrationDto;
 import com.epam.gymcore.domain.entity.Trainer;
 import org.mapstruct.Mapper;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -13,5 +14,5 @@ import java.util.Set;
 public interface TrainerMapper {
     Trainer toEntity(TrainerRegistrationDto registrationDto);
     TrainerDto toTrainerDto(Trainer trainer);
-    List<TrainerDto> toTrainerDto(Set<Trainer> trainerSet);
+    List<TrainerDto> toTrainerDto(Collection<Trainer> trainerSet);
 }

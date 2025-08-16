@@ -32,8 +32,8 @@ public class Trainee extends User {
     )
     private Set<Trainer> trainers = new HashSet<>();
 
-    public Trainee(String lastName, String firstName, LocalDate dateOfBirth, String address) {
-        super(lastName, firstName);
+    public Trainee(String firstName,String lastName,LocalDate dateOfBirth, String address) {
+        super(firstName,lastName);
         this.dateOfBirth = dateOfBirth;
         this.address = address;
     }
@@ -42,11 +42,11 @@ public class Trainee extends User {
     public boolean equals(Object o) {
         if (!(o instanceof Trainee trainee)) return false;
         if (!super.equals(o)) return false;
-        return Objects.equals(dateOfBirth, trainee.dateOfBirth) && Objects.equals(address, trainee.address) && Objects.equals(trainings, trainee.trainings) && Objects.equals(trainers, trainee.trainers);
+        return Objects.equals(dateOfBirth, trainee.dateOfBirth) && Objects.equals(address, trainee.address);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), dateOfBirth, address, trainings, trainers);
+        return Objects.hash(super.hashCode(), dateOfBirth, address);
     }
 }
