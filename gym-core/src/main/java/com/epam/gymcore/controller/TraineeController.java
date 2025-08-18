@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -36,24 +37,23 @@ public class TraineeController implements TraineeApi {
     }
 
     @Override
-    @PutMapping("/update-login")
+    @PutMapping("/{username}/update-login")
     public ResponseEntity<Void> updateLogin(String username, String oldPassword, String newPassword) {
         Trainee trainee = traineeService.findByUsernameAndPassword(username,oldPassword)
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
 
         traineeService.updatePasswordByUsername(trainee.getUsername(),newPassword);
-
         return ResponseEntity.ok().build();
     }
 
     @Override
-    @GetMapping("/get-profile")
+    @GetMapping("/{username}/get-profile")
     public ResponseEntity<TraineeProfileDto> getTraineeProfile(String username) {
         return ResponseEntity.ok(traineeService.getTraineeProfile(username));
     }
 
     @Override
-    @PutMapping("/update-profile")
+    @PutMapping("/{username}/update-profile")
     public ResponseEntity<TraineeProfileDto> updateTraineeProfile(String username, TraineeUpdateDto dto) {
         return ResponseEntity.ok(traineeService.updateTraineeProfile(username,dto));
     }
@@ -71,10 +71,23 @@ public class TraineeController implements TraineeApi {
     }
 
     @Override
-    @PatchMapping("/change-status")
-    public ResponseEntity<Void> changeStatus() {
-        return null;
+    @GetMapping("/{username}/training-list")
+    public ResponseEntity<List<TrainingDto>> getTraineeTrainingList(String username, LocalDateTime from, LocalDateTime to, String traineeName) {
+        return ResponseEntity.ok(traineeService.traineeTrainingsList(username,from,to,traineeName));
     }
 
+    @Override
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteTrainee(String username) {
+        traineeService.deleteByUsername(username);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @PatchMapping("/change-status")
+    public ResponseEntity<Void> changeStatus(String username,Boolean isActive) {
+        traineeService.changeStatus(username,isActive);
+        return ResponseEntity.ok().build();
+    }
 
 }

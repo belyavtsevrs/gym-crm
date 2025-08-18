@@ -4,11 +4,12 @@ import com.epam.gymcore.domain.dto.TrainingTypeDto;
 import com.epam.gymcore.domain.entity.TrainingType;
 import org.mapstruct.Mapper;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface TrainingTypeMapper {
     TrainingType toEntity(TrainingTypeDto typeDto);
-    List<TrainingTypeDto> toDto(Set<TrainingType> trainingTypes);
+    List<TrainingTypeDto> toDto(Collection<TrainingType> trainingTypes);
 }

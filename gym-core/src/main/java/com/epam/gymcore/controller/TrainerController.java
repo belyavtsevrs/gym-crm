@@ -1,9 +1,7 @@
 package com.epam.gymcore.controller;
 
 import com.epam.gymcore.controller.api.TrainerApi;
-import com.epam.gymcore.domain.dto.TrainerRegistrationDto;
-import com.epam.gymcore.domain.dto.TrainingDto;
-import com.epam.gymcore.domain.dto.UserDto;
+import com.epam.gymcore.domain.dto.*;
 import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.service.TrainerService;
 import org.springframework.http.HttpStatus;
@@ -40,7 +38,19 @@ public class TrainerController implements TrainerApi {
     }
 
     @Override
-    @PutMapping("/update-login")
+    @GetMapping("/{username}/get-profile")
+    public ResponseEntity<TrainerProfileDto> getTrainerProfile(String username) {
+        return ResponseEntity.ok(trainerService.getTrainerProfile(username));
+    }
+
+    @Override
+    @PutMapping("/{username}/update-profile")
+    public ResponseEntity<TrainerProfileDto> updateTraineeProfile(String username, TrainerUpdateDto dto) {
+        return ResponseEntity.ok(trainerService.updateTrainerProfile(username,dto));
+    }
+
+    @Override
+    @PutMapping("/{username}/update-login")
     public ResponseEntity<Void> updateLogin(String username, String oldPassword, String newPassword) {
         Trainer trainer = trainerService.findByUsernameAndPassword(username,oldPassword)
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
@@ -56,5 +66,10 @@ public class TrainerController implements TrainerApi {
         return ResponseEntity.ok(trainerService.trainerTrainingsList(username,from,to,traineeName));
     }
 
-
+    @Override
+    @PatchMapping("/change-status")
+    public ResponseEntity<Void> changeStatus(String username,Boolean isActive) {
+        trainerService.changeStatus(username,isActive);
+        return ResponseEntity.ok().build();
+    }
 }

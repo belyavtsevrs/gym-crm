@@ -11,5 +11,6 @@ public interface TraineeMapper {
     Trainee toEntity(TraineeRegistrationDto traineeRegistrationDto);
 
     @Mapping(source = "trainers", target = "trainersList")
+    @Mapping(source = "isActive", target = "isActive")
     TraineeProfileDto toProfileDto(Trainee trainee);
 }

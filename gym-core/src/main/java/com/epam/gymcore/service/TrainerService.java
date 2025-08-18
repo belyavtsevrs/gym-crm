@@ -1,9 +1,6 @@
 package com.epam.gymcore.service;
 
-import com.epam.gymcore.domain.dto.TraineeRegistrationDto;
-import com.epam.gymcore.domain.dto.TrainerRegistrationDto;
-import com.epam.gymcore.domain.dto.TrainingDto;
-import com.epam.gymcore.domain.dto.UserDto;
+import com.epam.gymcore.domain.dto.*;
 import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.service.api.Creator;
@@ -20,5 +17,7 @@ public interface TrainerService extends
         UserService<Trainer>
 {
     UserDto register(TrainerRegistrationDto dto);
+    TrainerProfileDto getTrainerProfile(String username);
+    TrainerProfileDto updateTrainerProfile(String username, TrainerUpdateDto updateDto);
     List<TrainingDto> trainerTrainingsList(String username, LocalDateTime from, LocalDateTime to , String traineeName);
 }

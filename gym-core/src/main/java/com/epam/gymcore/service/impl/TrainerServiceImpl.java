@@ -2,9 +2,8 @@ package com.epam.gymcore.service.impl;
 
 import com.epam.gymcore.dao.AbstractUserDao;
 import com.epam.gymcore.dao.TrainingTypeDao;
-import com.epam.gymcore.domain.dto.TrainerRegistrationDto;
-import com.epam.gymcore.domain.dto.TrainingDto;
-import com.epam.gymcore.domain.dto.UserDto;
+import com.epam.gymcore.domain.dto.*;
+import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.domain.entity.Training;
 import com.epam.gymcore.domain.entity.TrainingType;
@@ -69,6 +68,33 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer> implements 
     }
 
     @Override
+    public TrainerProfileDto getTrainerProfile(String username) {
+        Trainer trainer = dao.findByUsername(username).orElseThrow(()->
+                new UserNotFoundException(String.format("User with username %s not found",username)));
+
+        TrainerProfileDto profile = trainerMapper.toTrainerProfileDto(trainer);
+
+        return profile;
+    }
+
+    @Override
+    public TrainerProfileDto updateTrainerProfile(String username, TrainerUpdateDto updateDto) {
+        Trainer trainer = dao.findByUsername(username).orElseThrow(()->
+                new UserNotFoundException(String.format("User with username %s not found",username)));
+
+        log.info("(updateTraineeProfile) trainee by username = {}",trainer);
+
+        if (updateDto.firstName() != null)   trainer.setFirstName(updateDto.firstName());
+        if (updateDto.lastName() != null)    trainer.setLastName(updateDto.lastName());
+        if (updateDto.isActive() != null)    trainer.setIsActive(updateDto.isActive());
+
+        Trainer saved = dao.save(trainer);
+        log.info("(updateTraineeProfile) after save = {}",saved);
+
+        return trainerMapper.toTrainerProfileDto(saved);
+    }
+
+    @Override
     public List<TrainingDto> trainerTrainingsList(String username, LocalDateTime from, LocalDateTime to, String traineeName) {
         List<TrainingDto> trainingDtoList = new ArrayList<>();
         List<Training> trainings;
@@ -103,4 +129,12 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer> implements 
         return trainingDtoList;
     }
 
+    @Override
+    public Boolean changeStatus(String username, Boolean isActive) {
+        Trainer trainer = dao.findByUsername(username).orElseThrow(()->
+                new UserNotFoundException(String.format("User with username %s not found",username))
+        );
+        trainer.setIsActive(isActive);
+        return true;
+    }
 }

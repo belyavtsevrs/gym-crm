@@ -1,9 +1,11 @@
 package com.epam.gymcore.dao;
 
 import com.epam.gymcore.dao.api.UserDao;
+import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Training;
 import com.epam.gymcore.domain.entity.User;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.Query;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
@@ -70,15 +72,8 @@ public abstract class AbstractUserDao<E extends User> extends AbstractDao<E,Long
 
     @Override
     public void deleteByUsername(String username) {
-        try {
-            Query query = entityManager.createQuery(
-                    "DELETE FROM " + entityType.getSimpleName() + " u WHERE u.username = :username");
-            query.setParameter("username", username);
-            query.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-
-        }
+        E u = findByUsername(username).orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
+        entityManager.remove(u);
     }
 
     @Override

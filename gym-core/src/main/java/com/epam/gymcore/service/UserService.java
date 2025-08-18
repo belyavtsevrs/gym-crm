@@ -21,4 +21,5 @@ public interface UserService<E extends User> {
     List<E> findAllActive();
 
     List<Training> getUsersByUsernameAndCriteria(String username, LocalDateTime from, LocalDateTime to);
+    Boolean changeStatus(String username,Boolean isActive);
 }

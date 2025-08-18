@@ -1,6 +1,7 @@
 package com.epam.gymcore.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,13 +13,14 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TrainingCreateDto {
+public class CreateTrainingDto {
     @NotBlank
-    private String traineeUsername;
-    @NotBlank
-    private String trainerUsername;
-    @NotBlank
-    private String trainingName;
+    private String trainerName;
+    @FutureOrPresent
     private LocalDateTime trainingDate;
+    @NotBlank
+    private String trainingType;
     private Long duration;
+    @NotBlank
+    private String traineeName;
 }

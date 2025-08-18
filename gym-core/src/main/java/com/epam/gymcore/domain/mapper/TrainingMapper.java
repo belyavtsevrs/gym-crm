@@ -1,7 +1,9 @@
 package com.epam.gymcore.domain.mapper;
 
+import com.epam.gymcore.domain.dto.CreateTrainingDto;
 import com.epam.gymcore.domain.dto.TrainingDto;
 import com.epam.gymcore.domain.entity.Trainee;
+import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.domain.entity.Training;
 import com.epam.gymcore.domain.entity.TrainingType;
 import org.mapstruct.Mapper;

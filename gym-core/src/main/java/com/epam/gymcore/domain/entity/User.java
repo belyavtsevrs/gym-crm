@@ -18,9 +18,9 @@ public abstract class User extends AbstractEntity {
     protected String lastName;
     protected String username;
     protected String password;
-    protected boolean isActive;
+    protected Boolean isActive;
 
-    public User(String firstName, String lastName, String username, String password, boolean isActive) {
+    public User(String firstName, String lastName, String username, String password, Boolean isActive) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
