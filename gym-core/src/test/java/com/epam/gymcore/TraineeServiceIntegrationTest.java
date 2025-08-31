@@ -147,7 +147,7 @@ public class TraineeServiceIntegrationTest {
         Optional<Trainee> updated = traineeService.findByUsername(saved.getUsername());
 
         assertTrue(updated.isPresent());
-        assertFalse(updated.get().isActive());
+        assertFalse(updated.get().getIsActive());
     }
 
     @Test

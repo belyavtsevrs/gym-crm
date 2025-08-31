@@ -6,12 +6,15 @@ import com.epam.gymcore.domain.dto.*;
 import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.domain.entity.Training;
+import com.epam.gymcore.domain.enums.Roles;
 import com.epam.gymcore.domain.exception.UserNotFoundException;
 import com.epam.gymcore.domain.mapper.TraineeMapper;
 import com.epam.gymcore.domain.mapper.TrainerMapper;
 import com.epam.gymcore.domain.mapper.TrainingMapper;
 import com.epam.gymcore.service.TraineeService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,21 +31,24 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee> implements 
     private final TrainerDao trainerDao;
     private final TrainerMapper trainerMapper;
     private final TrainingMapper trainingMapper;
+    private final PasswordEncoder passwordEncoder;
 
     protected TraineeServiceImpl(AbstractUserDao<Trainee> dao,
                                  TraineeMapper traineeMapper, TrainerDao trainerDao,
-                                 TrainerMapper trainerMapper, TrainingMapper trainingMapper) {
-        super(dao);
+                                 TrainerMapper trainerMapper, TrainingMapper trainingMapper, PasswordEncoder passwordEncoder) {
+        super(dao,passwordEncoder);
         this.traineeMapper = traineeMapper;
         this.trainerDao = trainerDao;
         this.trainerMapper = trainerMapper;
         this.trainingMapper = trainingMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
     @Override
     public UserDto register(TraineeRegistrationDto dto) {
         Trainee newTrainee = traineeMapper.toEntity(dto);
+        newTrainee.setRole(Roles.ROLE_TRAINEE);
         log.info("(TraineeServiceImpl) newTrainee after mapping = {}", newTrainee);
 
         Trainee saved = super.create(newTrainee);

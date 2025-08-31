@@ -1,8 +1,10 @@
 package com.epam.gymcore.service.impl;
 
 import com.epam.gymcore.dao.AbstractUserDao;
+import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Training;
 import com.epam.gymcore.domain.entity.User;
+import com.epam.gymcore.domain.enums.Roles;
 import com.epam.gymcore.service.UserService;
 import com.epam.gymcore.service.api.Creator;
 import com.epam.gymcore.service.api.Deleter;
@@ -11,6 +13,8 @@ import com.epam.gymcore.service.api.Updater;
 import com.epam.gymcore.util.UserUtil;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,9 +23,11 @@ import java.util.Optional;
 @Slf4j
 public abstract class AbstractUserService<E extends User> implements UserService<E>, Creator<E>, Retriever<E, Long>, Updater<E>, Deleter<Long> {
     protected final AbstractUserDao<E> dao;
-
-    protected AbstractUserService(AbstractUserDao<E> dao) {
+    protected final PasswordEncoder passwordEncoder;
+    protected AbstractUserService(AbstractUserDao<E> dao,
+                                  PasswordEncoder passwordEncoder) {
         this.dao = dao;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -29,11 +35,17 @@ public abstract class AbstractUserService<E extends User> implements UserService
         String generatedUsername = UserUtil.createUsername(entity, username ->
                 dao.findByUsername(username).isPresent()
         );
+        if(entity instanceof Trainee){
+            entity.setRole(Roles.ROLE_TRAINEE);
+        }else
+            entity.setRole(Roles.ROLE_TRAINER);
+
 
         String generatedPassword = UserUtil.generatePassword();
+        log.info("generated password = {}",generatedPassword);
 
+        entity.setPassword(passwordEncoder.encode(generatedPassword));
         entity.setUsername(generatedUsername);
-        entity.setPassword(generatedPassword);
 
         log.info("(AbstractUserService) entity before save: = {}",entity);
         return dao.save(entity);

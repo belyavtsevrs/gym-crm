@@ -32,7 +32,7 @@ public interface TraineeApi {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    ResponseEntity<Void> login(@RequestParam("username") String username, @RequestParam("password") String password);
+    ResponseEntity<AuthResponse> login(@RequestParam("username") String username, @RequestParam("password") String password);
 
     @Operation(summary = "Change trainee password")
     @ApiResponses({

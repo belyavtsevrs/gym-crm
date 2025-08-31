@@ -3,22 +3,39 @@ package com.epam.gymcore.controller;
 import com.epam.gymcore.controller.api.TraineeApi;
 import com.epam.gymcore.domain.dto.*;
 import com.epam.gymcore.domain.entity.Trainee;
+import com.epam.gymcore.security.service.JwtService;
+import com.epam.gymcore.security.service.LoginAttemptService;
 import com.epam.gymcore.service.TraineeService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/trainee/")
 public class TraineeController implements TraineeApi {
     private final TraineeService traineeService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+    private final LoginAttemptService loginAttemptService;
 
-    public TraineeController(TraineeService traineeService) {
+    public TraineeController(TraineeService traineeService,
+                             AuthenticationManager authenticationManager,
+                             JwtService jwtService,
+                             LoginAttemptService loginAttemptService) {
         this.traineeService = traineeService;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+        this.loginAttemptService = loginAttemptService;
     }
 
     @Override
@@ -30,10 +47,26 @@ public class TraineeController implements TraineeApi {
 
     @Override
     @GetMapping("/login")
-    public ResponseEntity<Void> login(String username, String password) {
-        traineeService.findByUsernameAndPassword(username,password)
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-        return ResponseEntity.ok().build();
+    public ResponseEntity<AuthResponse> login(String username, String password) {
+        if(loginAttemptService.isBlocked(username)){
+            return ResponseEntity.ok(new AuthResponse("","The amount of attempt is exceeded.Try to login later"));
+        }
+        try{
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username,password)
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            String jwt = jwtService.generateToken(username);
+            loginAttemptService.loginSucceeded(username);
+            log.info("jwt = {}",jwt);
+
+            return ResponseEntity.ok(new AuthResponse(jwt,"success"));
+        }catch (Exception e){
+            loginAttemptService.loginFailed(username);
+            return ResponseEntity.ok(new AuthResponse("","Login is failed. You have attempts :" + loginAttemptService.getAttempts(username)));
+        }
     }
 
     @Override

@@ -1,9 +1,11 @@
 package com.epam.gymcore.domain.entity;
 
+import com.epam.gymcore.domain.enums.Roles;
 import com.epam.gymcore.util.UserUtil;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.Instant;
 import java.util.Objects;
 
 @Setter
@@ -19,6 +21,11 @@ public abstract class User extends AbstractEntity {
     protected String username;
     protected String password;
     protected Boolean isActive;
+    @Enumerated(EnumType.STRING)
+    protected Roles role;
+    protected Boolean isLocked = false;
+    protected Integer failedAttempt = 0;
+    private Instant lockTime;
 
     public User(String firstName, String lastName, String username, String password, Boolean isActive) {
         this.firstName = firstName;

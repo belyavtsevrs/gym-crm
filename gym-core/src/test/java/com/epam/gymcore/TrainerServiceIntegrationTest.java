@@ -121,7 +121,7 @@ public class TrainerServiceIntegrationTest {
         Optional<Trainer> updated = trainerService.findByUsername(saved.getUsername());
 
         assertTrue(updated.isPresent());
-        assertFalse(updated.get().isActive());
+        assertFalse(updated.get().getIsActive());
     }
 
     @Test

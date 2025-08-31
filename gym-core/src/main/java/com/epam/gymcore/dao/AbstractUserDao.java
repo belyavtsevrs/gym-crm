@@ -104,4 +104,9 @@ public abstract class AbstractUserDao<E extends User> extends AbstractDao<E,Long
                 })
                 .toList();
     }
+
+    public Long getCount(){
+        String query = "SELECT count(U) FROM " + entityType.getSimpleName() + " U ";
+        return entityManager.createQuery(query,Long.class).getSingleResult();
+    }
 }

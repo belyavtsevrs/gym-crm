@@ -11,6 +11,7 @@ import com.epam.gymcore.service.TrainingService;
 import jakarta.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.time.Duration;
 import java.time.LocalDate;

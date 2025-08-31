@@ -7,6 +7,7 @@ import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.domain.entity.Training;
 import com.epam.gymcore.domain.entity.TrainingType;
+import com.epam.gymcore.domain.enums.Roles;
 import com.epam.gymcore.domain.exception.UserNotFoundException;
 import com.epam.gymcore.domain.mapper.TrainerMapper;
 import com.epam.gymcore.domain.mapper.TrainingMapper;
@@ -14,6 +15,7 @@ import com.epam.gymcore.domain.mapper.TrainingTypeMapper;
 import com.epam.gymcore.service.TrainerService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,23 +30,24 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer> implements 
     private final TrainerMapper trainerMapper;
     private final TrainingTypeMapper trainingTypeMapper;
     private final TrainingMapper trainingMapper;
-
+    private final PasswordEncoder passwordEncoder;
     protected TrainerServiceImpl(AbstractUserDao<Trainer> dao,
                                  TrainingTypeDao trainingTypeDao,
                                  TrainerMapper trainerMapper,
-                                 TrainingTypeMapper trainingTypeMapper, TrainingMapper trainingMapper) {
-        super(dao);
+                                 TrainingTypeMapper trainingTypeMapper, TrainingMapper trainingMapper, PasswordEncoder passwordEncoder) {
+        super(dao,passwordEncoder);
         this.trainingTypeDao = trainingTypeDao;
         this.trainerMapper = trainerMapper;
         this.trainingTypeMapper = trainingTypeMapper;
         this.trainingMapper = trainingMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
     public UserDto register(TrainerRegistrationDto dto) {
         Trainer trainer = trainerMapper.toEntity(dto);
         log.info("(TrainerServiceImpl) newTrainer after mapping = {}", trainer);
-
+        trainer.setRole(Roles.ROLE_TRAINER);
         if (dto.getSpecialization() != null && !dto.getSpecialization().isEmpty()) {
 
             Set<TrainingType> types = dto.getSpecialization().stream()
