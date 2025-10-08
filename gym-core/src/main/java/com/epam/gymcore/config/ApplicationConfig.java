@@ -1,6 +1,9 @@
 package com.epam.gymcore.config;
 
 import com.epam.gymcore.dao.TrainingTypeDao;
+import com.epam.gymcore.domain.dto.TraineeRegistrationDto;
+import com.epam.gymcore.domain.dto.TrainerRegistrationDto;
+import com.epam.gymcore.domain.dto.TrainingTypeDto;
 import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.domain.entity.Training;
@@ -24,7 +27,10 @@ public class ApplicationConfig implements CommandLineRunner {
     private final TrainerService trainerService;
     private final TraineeService traineeService;
     private final TrainingService trainingService;
-    public ApplicationConfig(TrainingTypeDao trainingTypeDao, TrainerService trainerService, TraineeService traineeService, TrainingService trainingService) {
+    public ApplicationConfig(TrainingTypeDao trainingTypeDao,
+                             TrainerService trainerService,
+                             TraineeService traineeService,
+                             TrainingService trainingService) {
         this.trainingTypeDao = trainingTypeDao;
         this.trainerService = trainerService;
         this.traineeService = traineeService;
@@ -35,44 +41,55 @@ public class ApplicationConfig implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        List<TrainingType> trainingTypes =
-                List.of(
+        List<TrainingType> trainingTypes = List.of(
                 new TrainingType("Bodybuilding"),
                 new TrainingType("Yoga"),
                 new TrainingType("Aerobics"),
                 new TrainingType("Dance")
         );
+        trainingTypes.forEach(trainingTypeDao::save);
 
-        for (TrainingType type : trainingTypes) {
-            trainingTypeDao.save(type);
-        }
-
-        List<Trainee> trainees =
-                List.of(
-                new Trainee("Rodion", "B", LocalDate.of(2000, 6, 9), "Biba street 69"),
-                new Trainee("Rodion", "B", LocalDate.of(2001, 8, 14), "Pushkin 96"),
-                new Trainee("Volodya", "Gvozd", LocalDate.of(1999, 6, 9), "Chivapchicheva 148"),
-                new Trainee("Raimbek", "Sayndikov", LocalDate.of(1999, 6, 9), "Raimbeka 148"),
-                new Trainee("Eldar", "Pipa", LocalDate.of(1999, 6, 9), "pupa 148")
+        List<TraineeRegistrationDto> traineeDtos = List.of(
+                new TraineeRegistrationDto("Rodion", "B", LocalDate.of(2000, 6, 9), "Biba street 69"),
+                new TraineeRegistrationDto("Rodion", "B", LocalDate.of(2001, 8, 14), "Pushkin 96"),
+                new TraineeRegistrationDto("Volodya", "Gvozd", LocalDate.of(1999, 6, 9), "Chivapchicheva 148"),
+                new TraineeRegistrationDto("Raimbek", "Sayndikov", LocalDate.of(1999, 6, 9), "Raimbeka 148"),
+                new TraineeRegistrationDto("Eldar", "Pipa", LocalDate.of(1999, 6, 9), "Pupa 148")
         );
 
-        for (Trainee trainee : trainees) {
-            traineeService.create(trainee);
+        for (TraineeRegistrationDto dto : traineeDtos) {
+            traineeService.register(dto);
         }
 
-        Trainer trainer1 = new Trainer("Vasily", "Che");
-        trainer1.getSpecializations().add(trainingTypes.get(0));
-        trainer1.getSpecializations().add(trainingTypes.get(1));
-        trainerService.create(trainer1);
+        List<Trainee> trainees = traineeService.findAll();
 
-        Trainer trainer2 = new Trainer("Batyrbek", "Batyrbekovich");
-        trainer2.getSpecializations().add(trainingTypes.get(3));
-        trainerService.create(trainer2);
+        TrainerRegistrationDto trainer1Dto = new TrainerRegistrationDto();
+        trainer1Dto.setFirstName("Vasily");
+        trainer1Dto.setLastName("Che");
+        trainer1Dto.getSpecialization().add(new TrainingTypeDto("Bodybuilding"));
+        trainer1Dto.getSpecialization().add(new TrainingTypeDto("Yoga"));
+        trainerService.register(trainer1Dto);
 
-        for (Trainee trainee : trainees) {
-            trainer1.getTrainees().add(trainee);
-            trainee.getTrainers().add(trainer1);
-            traineeService.update(trainee);
+        TrainerRegistrationDto trainer2Dto = new TrainerRegistrationDto();
+        trainer2Dto.setFirstName("Batyrbek");
+        trainer2Dto.setLastName("Batyrbekovich");
+        trainer2Dto.getSpecialization().add(new TrainingTypeDto("Dance"));
+        trainerService.register(trainer2Dto);
+
+        List<Trainer> trainers = trainerService.findAll();
+        Trainer trainer1 = trainers.stream()
+                .filter(t -> t.getFirstName().equals("Vasily"))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Trainer1 not found"));
+        Trainer trainer2 = trainers.stream()
+                .filter(t -> t.getFirstName().equals("Batyrbek"))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Trainer2 not found"));
+
+        for (Trainee t : trainees) {
+            trainer1.getTrainees().add(t);
+            t.getTrainers().add(trainer1);
+            traineeService.update(t);
         }
 
         trainees.get(3).getTrainers().add(trainer2);
@@ -83,12 +100,17 @@ public class ApplicationConfig implements CommandLineRunner {
         trainer2.getTrainees().add(trainees.get(4));
         traineeService.update(trainees.get(4));
 
-        TrainingType Bodybuilding = trainingTypeDao.findByName("Bodybuilding").get();
+        TrainingType bodybuilding = trainingTypeDao.findByName("Bodybuilding")
+                .orElseThrow(() -> new RuntimeException("Bodybuilding type not found"));
 
         Trainee trainee = trainees.get(0);
-        Training training =
-                new Training(trainer1,trainee,Bodybuilding,LocalDateTime.now(), Duration.ofHours(2));
-
+        Training training = new Training(
+                trainer1,
+                trainee,
+                bodybuilding,
+                LocalDateTime.now(),
+                Duration.ofHours(2)
+        );
         trainingService.create(training);
     }
 

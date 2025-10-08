@@ -23,30 +23,12 @@ import java.util.Optional;
 @Slf4j
 public abstract class AbstractUserService<E extends User> implements UserService<E>, Creator<E>, Retriever<E, Long>, Updater<E>, Deleter<Long> {
     protected final AbstractUserDao<E> dao;
-    protected final PasswordEncoder passwordEncoder;
-    protected AbstractUserService(AbstractUserDao<E> dao,
-                                  PasswordEncoder passwordEncoder) {
+    protected AbstractUserService(AbstractUserDao<E> dao ) {
         this.dao = dao;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public E create(E entity) {
-        String generatedUsername = UserUtil.createUsername(entity, username ->
-                dao.findByUsername(username).isPresent()
-        );
-        if(entity instanceof Trainee){
-            entity.setRole(Roles.ROLE_TRAINEE);
-        }else
-            entity.setRole(Roles.ROLE_TRAINER);
-
-
-        String generatedPassword = UserUtil.generatePassword();
-        log.info("generated password = {}",generatedPassword);
-
-        entity.setPassword(passwordEncoder.encode(generatedPassword));
-        entity.setUsername(generatedUsername);
-
         log.info("(AbstractUserService) entity before save: = {}",entity);
         return dao.save(entity);
     }

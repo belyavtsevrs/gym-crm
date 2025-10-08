@@ -7,8 +7,8 @@ import java.util.Random;
 import java.util.function.Function;
 
 public class UserUtil {
-    public static String createUsername(User user, Function<String, Boolean> isUsernameTaken) {
-        String base = user.getFirstName().toLowerCase() + "." + user.getLastName().toLowerCase();
+    public static String createUsername(String firstName,String lastName, Function<String, Boolean> isUsernameTaken) {
+        String base = firstName.toLowerCase() + "." + lastName.toLowerCase();
         String candidate = base;
         int suffix = 1;
 

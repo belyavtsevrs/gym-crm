@@ -3,8 +3,6 @@ package com.epam.gymcore.controller;
 import com.epam.gymcore.controller.api.TraineeApi;
 import com.epam.gymcore.domain.dto.*;
 import com.epam.gymcore.domain.entity.Trainee;
-import com.epam.gymcore.security.service.JwtService;
-import com.epam.gymcore.security.service.LoginAttemptService;
 import com.epam.gymcore.service.TraineeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -24,18 +22,9 @@ import java.util.List;
 @RequestMapping("/api/trainee/")
 public class TraineeController implements TraineeApi {
     private final TraineeService traineeService;
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
-    private final LoginAttemptService loginAttemptService;
 
-    public TraineeController(TraineeService traineeService,
-                             AuthenticationManager authenticationManager,
-                             JwtService jwtService,
-                             LoginAttemptService loginAttemptService) {
+    public TraineeController(TraineeService traineeService ) {
         this.traineeService = traineeService;
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
-        this.loginAttemptService = loginAttemptService;
     }
 
     @Override
@@ -48,25 +37,7 @@ public class TraineeController implements TraineeApi {
     @Override
     @GetMapping("/login")
     public ResponseEntity<AuthResponse> login(String username, String password) {
-        if(loginAttemptService.isBlocked(username)){
-            return ResponseEntity.ok(new AuthResponse("","The amount of attempt is exceeded.Try to login later"));
-        }
-        try{
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username,password)
-            );
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            String jwt = jwtService.generateToken(username);
-            loginAttemptService.loginSucceeded(username);
-            log.info("jwt = {}",jwt);
-
-            return ResponseEntity.ok(new AuthResponse(jwt,"success"));
-        }catch (Exception e){
-            loginAttemptService.loginFailed(username);
-            return ResponseEntity.ok(new AuthResponse("","Login is failed. You have attempts :" + loginAttemptService.getAttempts(username)));
-        }
+       return null;
     }
 
     @Override

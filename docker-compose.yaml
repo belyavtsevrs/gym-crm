@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  gym-core-db:
+    container_name: gym-core-postgres
+    image: postgres:latest
+    restart: always
+    shm_size: 128mb
+    ports:
+      - "5430:5432"
+    environment:
+      POSTGRES_DB: gym_crm
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+
+  gym-security-db:
+    container_name: gym-security-postgres
+    image: postgres:latest
+    restart: always
+    shm_size: 128mb
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_DB: gym_crm
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+
+  redis:
+    image: redis:6.2
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: [ "redis-server", "--appendonly", "yes" ]
+
+volumes:
+  gym_core_data:
+  gym_security_data:
+  redis_data:

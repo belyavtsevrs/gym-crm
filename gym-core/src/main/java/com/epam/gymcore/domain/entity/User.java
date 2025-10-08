@@ -16,6 +16,7 @@ import java.util.Objects;
 @ToString
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class User extends AbstractEntity {
+    private Long userId;
     protected String firstName;
     protected String lastName;
     protected String username;
@@ -25,7 +26,6 @@ public abstract class User extends AbstractEntity {
     protected Roles role;
     protected Boolean isLocked = false;
     protected Integer failedAttempt = 0;
-    private Instant lockTime;
 
     public User(String firstName, String lastName, String username, String password, Boolean isActive) {
         this.firstName = firstName;

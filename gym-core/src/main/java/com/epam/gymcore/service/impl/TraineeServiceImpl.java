@@ -1,5 +1,6 @@
 package com.epam.gymcore.service.impl;
 
+import com.epam.gymcore.client.AuthClient;
 import com.epam.gymcore.dao.AbstractUserDao;
 import com.epam.gymcore.dao.TrainerDao;
 import com.epam.gymcore.domain.dto.*;
@@ -12,6 +13,7 @@ import com.epam.gymcore.domain.mapper.TraineeMapper;
 import com.epam.gymcore.domain.mapper.TrainerMapper;
 import com.epam.gymcore.domain.mapper.TrainingMapper;
 import com.epam.gymcore.service.TraineeService;
+import com.epam.gymcore.util.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,17 +33,18 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee> implements 
     private final TrainerDao trainerDao;
     private final TrainerMapper trainerMapper;
     private final TrainingMapper trainingMapper;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthClient authClient;
 
     protected TraineeServiceImpl(AbstractUserDao<Trainee> dao,
                                  TraineeMapper traineeMapper, TrainerDao trainerDao,
-                                 TrainerMapper trainerMapper, TrainingMapper trainingMapper, PasswordEncoder passwordEncoder) {
-        super(dao,passwordEncoder);
+                                 TrainerMapper trainerMapper, TrainingMapper trainingMapper,
+                                 AuthClient authClient) {
+        super(dao);
         this.traineeMapper = traineeMapper;
         this.trainerDao = trainerDao;
         this.trainerMapper = trainerMapper;
         this.trainingMapper = trainingMapper;
-        this.passwordEncoder = passwordEncoder;
+        this.authClient = authClient;
     }
 
 
@@ -50,6 +53,23 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee> implements 
         Trainee newTrainee = traineeMapper.toEntity(dto);
         newTrainee.setRole(Roles.ROLE_TRAINEE);
         log.info("(TraineeServiceImpl) newTrainee after mapping = {}", newTrainee);
+
+        String generatedUsername = UserUtil.createUsername(dto.getFirstName(),dto.getLastName(), username ->
+                dao.findByUsername(username).isPresent()
+        );
+
+        String generatedPassword = UserUtil.generatePassword();
+        log.info("generated password = {}",generatedPassword);
+
+        RegisterRequest request = new RegisterRequest(generatedUsername,generatedPassword,Roles.ROLE_TRAINEE.name());
+        var res = authClient.createUser(request);
+
+        Long userId = ((Number) res.get("userId")).longValue();
+        log.info("{}",res);
+
+        newTrainee.setUsername(generatedUsername);
+        newTrainee.setPassword(generatedPassword);
+        newTrainee.setUserId(userId);
 
         Trainee saved = super.create(newTrainee);
         log.info("(TraineeServiceImpl) new trainee is registered = {}", saved);

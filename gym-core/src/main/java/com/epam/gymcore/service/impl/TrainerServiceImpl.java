@@ -1,5 +1,6 @@
 package com.epam.gymcore.service.impl;
 
+import com.epam.gymcore.client.AuthClient;
 import com.epam.gymcore.dao.AbstractUserDao;
 import com.epam.gymcore.dao.TrainingTypeDao;
 import com.epam.gymcore.domain.dto.*;
@@ -13,6 +14,7 @@ import com.epam.gymcore.domain.mapper.TrainerMapper;
 import com.epam.gymcore.domain.mapper.TrainingMapper;
 import com.epam.gymcore.domain.mapper.TrainingTypeMapper;
 import com.epam.gymcore.service.TrainerService;
+import com.epam.gymcore.util.UserUtil;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,17 +32,20 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer> implements 
     private final TrainerMapper trainerMapper;
     private final TrainingTypeMapper trainingTypeMapper;
     private final TrainingMapper trainingMapper;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthClient authClient;
+
     protected TrainerServiceImpl(AbstractUserDao<Trainer> dao,
                                  TrainingTypeDao trainingTypeDao,
                                  TrainerMapper trainerMapper,
-                                 TrainingTypeMapper trainingTypeMapper, TrainingMapper trainingMapper, PasswordEncoder passwordEncoder) {
-        super(dao,passwordEncoder);
+                                 TrainingTypeMapper trainingTypeMapper,
+                                 TrainingMapper trainingMapper,
+                                 AuthClient authClient) {
+        super(dao);
         this.trainingTypeDao = trainingTypeDao;
         this.trainerMapper = trainerMapper;
         this.trainingTypeMapper = trainingTypeMapper;
         this.trainingMapper = trainingMapper;
-        this.passwordEncoder = passwordEncoder;
+        this.authClient = authClient;
     }
 
     @Transactional
@@ -48,6 +53,14 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer> implements 
         Trainer trainer = trainerMapper.toEntity(dto);
         log.info("(TrainerServiceImpl) newTrainer after mapping = {}", trainer);
         trainer.setRole(Roles.ROLE_TRAINER);
+
+        String generatedUsername = UserUtil.createUsername(dto.getFirstName(),dto.getLastName(), username ->
+                dao.findByUsername(username).isPresent()
+        );
+
+        String generatedPassword = UserUtil.generatePassword();
+        log.info("generated password = {}",generatedPassword);
+
         if (dto.getSpecialization() != null && !dto.getSpecialization().isEmpty()) {
 
             Set<TrainingType> types = dto.getSpecialization().stream()
@@ -63,6 +76,16 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer> implements 
 
             trainer.setSpecializations(types);
         }
+
+        RegisterRequest request = new RegisterRequest(generatedUsername,generatedPassword,trainer.getRole().name());
+        var res = authClient.createUser(request);
+
+        log.info("(TrainerServiceImpl) = {}",res);
+        Long userId = ((Number) res.get("userId")).longValue();
+
+        trainer.setUsername(generatedUsername);
+        trainer.setPassword(generatedPassword);
+        trainer.setUserId(userId);
 
         Trainer saved = super.create(trainer);
         log.info("(TrainerServiceImpl) new trainer is registered = {}", saved);
