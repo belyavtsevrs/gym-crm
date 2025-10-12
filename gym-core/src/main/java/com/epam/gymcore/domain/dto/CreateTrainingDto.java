@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Setter
@@ -20,7 +21,7 @@ public class CreateTrainingDto {
     private LocalDateTime trainingDate;
     @NotBlank
     private String trainingType;
-    private Long duration;
+    private Duration duration;
     @NotBlank
     private String traineeName;
 }

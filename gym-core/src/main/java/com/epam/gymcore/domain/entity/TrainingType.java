@@ -9,6 +9,7 @@ import java.util.Set;
 @Getter
 @Entity
 @Table(name = "training_types")
+@ToString
 @NoArgsConstructor
 public class TrainingType extends AbstractEntity{
 

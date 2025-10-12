@@ -1,6 +1,7 @@
 package com.epam.gymcore.config;
 
 import com.epam.gymcore.dao.TrainingTypeDao;
+import com.epam.gymcore.domain.dto.CreateTrainingDto;
 import com.epam.gymcore.domain.dto.TraineeRegistrationDto;
 import com.epam.gymcore.domain.dto.TrainerRegistrationDto;
 import com.epam.gymcore.domain.dto.TrainingTypeDto;
@@ -111,7 +112,15 @@ public class ApplicationConfig implements CommandLineRunner {
                 LocalDateTime.now(),
                 Duration.ofHours(2)
         );
-        trainingService.create(training);
+
+        CreateTrainingDto dto = new CreateTrainingDto();
+        dto.setTraineeName(trainee.getUsername());
+        dto.setTrainerName(trainer1.getUsername());
+        dto.setTrainingDate(LocalDateTime.now());
+        dto.setTrainingType(bodybuilding.getName());
+        dto.setDuration(training.getDuration());
+
+        trainingService.createTraining(dto);
     }
 
 }

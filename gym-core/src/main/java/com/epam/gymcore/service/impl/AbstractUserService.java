@@ -21,8 +21,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-public abstract class AbstractUserService<E extends User> implements UserService<E>, Creator<E>, Retriever<E, Long>, Updater<E>, Deleter<Long> {
+public abstract class AbstractUserService<E extends User>
+        implements UserService<E>, Creator<E>, Retriever<E, Long>, Updater<E>, Deleter<Long> {
+
     protected final AbstractUserDao<E> dao;
+
     protected AbstractUserService(AbstractUserDao<E> dao ) {
         this.dao = dao;
     }

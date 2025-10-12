@@ -1,8 +1,10 @@
 package com.epam.gymcore.service.impl;
 
+import com.epam.gymcore.client.WorkloadClient;
 import com.epam.gymcore.dao.TrainingDao;
 import com.epam.gymcore.dao.TrainingTypeDao;
 import com.epam.gymcore.domain.dto.CreateTrainingDto;
+import com.epam.gymcore.domain.dto.TrainerWorkloadRequest;
 import com.epam.gymcore.domain.dto.TrainingDto;
 import com.epam.gymcore.domain.dto.TrainingTypeDto;
 import com.epam.gymcore.domain.entity.Trainee;
@@ -15,6 +17,7 @@ import com.epam.gymcore.domain.mapper.TrainingTypeMapper;
 import com.epam.gymcore.service.TraineeService;
 import com.epam.gymcore.service.TrainerService;
 import com.epam.gymcore.service.TrainingService;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -31,14 +34,22 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingTypeDao trainingTypeDao;
     private final TrainingMapper trainingMapper;
     private final TrainingTypeMapper trainingTypeMapper;
+    private final WorkloadClient workloadClient;
 
-    public TrainingServiceImpl(TrainingDao trainingDao, TraineeService traineeService, TrainerService trainerService, TrainingTypeDao trainingTypeDao, TrainingMapper trainingMapper, TrainingTypeMapper trainingTypeMapper) {
+    public TrainingServiceImpl(TrainingDao trainingDao,
+                               TraineeService traineeService,
+                               TrainerService trainerService,
+                               TrainingTypeDao trainingTypeDao,
+                               TrainingMapper trainingMapper,
+                               TrainingTypeMapper trainingTypeMapper,
+                               WorkloadClient workloadClient) {
         this.trainingDao = trainingDao;
         this.traineeService = traineeService;
         this.trainerService = trainerService;
         this.trainingTypeDao = trainingTypeDao;
         this.trainingMapper = trainingMapper;
         this.trainingTypeMapper = trainingTypeMapper;
+        this.workloadClient = workloadClient;
     }
 
     @Override
@@ -52,6 +63,7 @@ public class TrainingServiceImpl implements TrainingService {
     }
 
     @Override
+    @Transactional
     public TrainingDto createTraining(CreateTrainingDto trainingDto) {
         Trainee trainee = traineeService.findByUsername(trainingDto.getTraineeName()).orElseThrow(
                 ()-> new UserNotFoundException("User not found")
@@ -66,10 +78,21 @@ public class TrainingServiceImpl implements TrainingService {
         log.info("type = {}",type);
 
         Training newTraining = new Training
-                (trainer,trainee,type,trainingDto.getTrainingDate(),Duration.ofHours(trainingDto.getDuration()));
+                (trainer,trainee,type,trainingDto.getTrainingDate(),trainingDto.getDuration());
 
-        Training save = create(newTraining);
+        Training save = trainingDao.save(newTraining);
         log.info("training after save = {}",save);
+
+        var workloadRequest = new TrainerWorkloadRequest(
+                trainer.getUsername(),
+                trainer.getFirstName(),
+                trainer.getLastName(),
+                trainer.getIsActive(),
+                newTraining.getTrainingDate(),
+                newTraining.getDuration(),
+                TrainerWorkloadRequest.ActionType.ADD);
+
+        workloadClient.createWorkloadEvent(workloadRequest);
 
         return trainingMapper.toDto(save,save.getTrainingType(),save.getTrainee());
     }
@@ -80,6 +103,7 @@ public class TrainingServiceImpl implements TrainingService {
     }
 
     @Override
+    @Transactional
     public Training create(Training entity) {
         return trainingDao.save(entity);
     }
