@@ -7,7 +7,7 @@ import java.time.Month;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "workloadRef")
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity

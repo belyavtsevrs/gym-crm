@@ -1,5 +1,6 @@
 package com.epam.gymcore.controller;
 
+import com.epam.gymcore.client.WorkloadClient;
 import com.epam.gymcore.controller.api.TrainerApi;
 import com.epam.gymcore.domain.dto.*;
 import com.epam.gymcore.domain.entity.Trainer;
@@ -7,10 +8,6 @@ import com.epam.gymcore.service.TrainerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -22,10 +19,13 @@ import java.util.List;
 @RequestMapping("/api/trainer/")
 public class TrainerController implements TrainerApi {
     private final TrainerService trainerService;
+    private final WorkloadClient workloadClient;
 
-    public TrainerController(TrainerService trainerService
-                             ) {
+    public TrainerController(TrainerService trainerService,
+                              WorkloadClient workloadClient
+    ) {
         this.trainerService = trainerService;
+        this.workloadClient = workloadClient;
     }
 
     @Override
@@ -77,4 +77,18 @@ public class TrainerController implements TrainerApi {
         trainerService.changeStatus(username,isActive);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/{username}/trainer-workload")
+    public ResponseEntity<TrainerWorkloadResponse> workloadResponse(
+            @PathVariable("username") String username) {
+        log.info("Fetching workload for trainer: {}", username);
+
+        if (username == null || username.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must not be empty");
+        }
+
+        TrainerWorkloadResponse response = workloadClient.trainerWorkload(username);
+        return ResponseEntity.ok(response);
+    }
+
 }

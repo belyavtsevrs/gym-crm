@@ -2,16 +2,14 @@ package com.epam.gymcore.controller;
 
 import com.epam.gymcore.controller.api.TrainingApi;
 import com.epam.gymcore.domain.dto.CreateTrainingDto;
-import com.epam.gymcore.domain.dto.TrainingDto;
 import com.epam.gymcore.domain.dto.TrainingTypeDto;
 import com.epam.gymcore.service.TrainingService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -31,6 +29,12 @@ public class TrainingController implements TrainingApi {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{username}/delete")
+    public ResponseEntity<Void> deleteTraining(@PathVariable("username")String username,@RequestParam("date")@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date){
+        trainingService.removeTraining(username,date);
+        return ResponseEntity.noContent().build();
     }
 
     @Override

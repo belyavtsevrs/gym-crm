@@ -10,7 +10,7 @@ import java.util.Objects;
 @Setter
 @Getter
 @Entity
-@ToString
+@ToString(exclude = "trainerWorkload")
 @AllArgsConstructor
 @NoArgsConstructor
 public class Workload {

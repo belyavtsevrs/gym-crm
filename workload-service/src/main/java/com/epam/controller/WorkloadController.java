@@ -1,15 +1,13 @@
 package com.epam.controller;
 
 import com.epam.model.dto.TrainerWorkloadRequest;
+import com.epam.model.dto.TrainerWorkloadResponse;
 import com.epam.service.WorkloadService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -20,8 +18,14 @@ public class WorkloadController {
 
     @PostMapping("/event")
     public ResponseEntity<?> createWorkloadEvent(@RequestBody TrainerWorkloadRequest wr){
-        log.info(" Received workload event: {}", wr);
+        log.info("Received workload event: {}", wr);
         workloadService.workloadEvent(wr);
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @GetMapping("/{username}/trainer-workload")
+    public ResponseEntity<TrainerWorkloadResponse> trainerWorkload(@PathVariable("username") String username){
+        TrainerWorkloadResponse response = workloadService.workloadResponse(username);
+        return ResponseEntity.ok(response);
     }
 }

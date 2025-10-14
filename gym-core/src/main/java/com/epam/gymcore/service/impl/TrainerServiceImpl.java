@@ -14,6 +14,7 @@ import com.epam.gymcore.domain.mapper.TrainerMapper;
 import com.epam.gymcore.domain.mapper.TrainingMapper;
 import com.epam.gymcore.domain.mapper.TrainingTypeMapper;
 import com.epam.gymcore.service.TrainerService;
+import com.epam.gymcore.service.TrainingService;
 import com.epam.gymcore.util.UserUtil;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -154,6 +155,7 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer> implements 
         }
         return trainingDtoList;
     }
+
 
     @Override
     public Boolean changeStatus(String username, Boolean isActive) {

@@ -1,6 +1,9 @@
 package com.epam.service;
 
+import com.epam.model.dto.MonthResponse;
 import com.epam.model.dto.TrainerWorkloadRequest;
+import com.epam.model.dto.TrainerWorkloadResponse;
+import com.epam.model.dto.YearResponse;
 import com.epam.model.entity.Months;
 import com.epam.model.entity.TrainerWorkload;
 import com.epam.model.entity.Workload;
@@ -8,9 +11,12 @@ import com.epam.model.mapper.WorkloadReqMapper;
 import com.epam.repository.WorkloadRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.Month;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -18,7 +24,8 @@ public class WorkloadServiceImpl implements WorkloadService {
     private final WorkloadRepository workloadRepository;
     private final WorkloadReqMapper workloadReqMapper;
 
-    public WorkloadServiceImpl(WorkloadRepository workloadRepository, WorkloadReqMapper workloadReqMapper) {
+    public WorkloadServiceImpl(WorkloadRepository workloadRepository,
+                               WorkloadReqMapper workloadReqMapper) {
         this.workloadRepository = workloadRepository;
         this.workloadReqMapper = workloadReqMapper;
     }
@@ -36,17 +43,53 @@ public class WorkloadServiceImpl implements WorkloadService {
         return wr.actionType().name();
     }
 
-    private boolean removeWorkloadEvent(TrainerWorkloadRequest wr){
+    @Override
+    public TrainerWorkloadResponse workloadResponse(String username) {
+        TrainerWorkload workload = workloadRepository.findByTrainerUsername(username).orElseThrow(()->
+                new UsernameNotFoundException(String.format("Wokload for trainer with %s username not found",username)));
+        log.info("(workloadResponse) workload = {}",workload);
 
+        List<YearResponse> yearResponses = new ArrayList<>();
+        for(var x : workload.getYears()){
+            List<MonthResponse> monthResponses = new ArrayList<>();
+            for(var y : x.getMonths()){
+                monthResponses.add(new MonthResponse(
+                        y.getMonth(),
+                        y.getWorkload().intValue()
+                ));
+            }
+            yearResponses.add(new YearResponse(
+                    x.getWorkloadYear(),
+                    monthResponses
+            ));
+        }
+        TrainerWorkloadResponse workloadResponse =
+                new TrainerWorkloadResponse(
+                        workload.getTrainerUsername(),
+                        workload.getTrainerFirstname(),
+                        workload.getTrainerLastname(),
+                        workload.getIsActive(),
+                        yearResponses
+                );
+        log.info("(TrainerWorkloadResponse) : TrainerWorkloadResponse = {}",workloadResponse);
+
+        return workloadResponse;
+    }
+
+    private boolean removeWorkloadEvent(TrainerWorkloadRequest wr){
         return true;
     }
 
     private boolean addWorkloadEvent(TrainerWorkloadRequest wr) {
-        TrainerWorkload trainer = new TrainerWorkload();
-        trainer.setTrainerFirstname(wr.trainerFirstname());
-        trainer.setTrainerLastname(wr.trainerLastname());
-        trainer.setTrainerUsername(wr.trainerUsername());
-        trainer.setIsActive(wr.isActive());
+        TrainerWorkload trainer = workloadRepository.findByTrainerUsername(wr.trainerUsername())
+                .orElseGet(()->{
+                    TrainerWorkload newTrainer = new TrainerWorkload();
+                    newTrainer.setTrainerFirstname(wr.trainerFirstname());
+                    newTrainer.setTrainerLastname(wr.trainerLastname());
+                    newTrainer.setTrainerUsername(wr.trainerUsername());
+                    newTrainer.setIsActive(wr.isActive());
+                    return newTrainer;
+                });
 
         int yearValue = wr.trainingDate().getYear();
         Month monthValue = wr.trainingDate().getMonth();

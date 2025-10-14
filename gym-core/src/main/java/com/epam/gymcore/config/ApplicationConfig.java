@@ -21,6 +21,8 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Stream;
 
 @Configuration
 public class ApplicationConfig implements CommandLineRunner {
@@ -113,14 +115,25 @@ public class ApplicationConfig implements CommandLineRunner {
                 Duration.ofHours(2)
         );
 
-        CreateTrainingDto dto = new CreateTrainingDto();
-        dto.setTraineeName(trainee.getUsername());
-        dto.setTrainerName(trainer1.getUsername());
-        dto.setTrainingDate(LocalDateTime.now());
-        dto.setTrainingType(bodybuilding.getName());
-        dto.setDuration(training.getDuration());
+        Stream.of(new Random().nextInt(13)).forEach(i -> {
+            CreateTrainingDto dto = new CreateTrainingDto();
+            dto.setTraineeName(trainee.getUsername());
+            dto.setTrainerName(trainer1.getUsername());
+            dto.setTrainingDate(LocalDateTime.now().plusDays(i));
+            dto.setTrainingType(bodybuilding.getName());
+            dto.setDuration(training.getDuration());
+            trainingService.createTraining(dto);
+        });
 
-        trainingService.createTraining(dto);
+        Stream.of(0, 1, 2,3,4,5,6,7,8,9,10).forEach(i -> {
+            CreateTrainingDto dto = new CreateTrainingDto();
+            dto.setTraineeName(trainee.getUsername());
+            dto.setTrainerName(trainer1.getUsername());
+            dto.setTrainingDate(LocalDateTime.now().plusMonths(i));
+            dto.setTrainingType(bodybuilding.getName());
+            dto.setDuration(training.getDuration());
+            trainingService.createTraining(dto);
+        });
     }
 
 }

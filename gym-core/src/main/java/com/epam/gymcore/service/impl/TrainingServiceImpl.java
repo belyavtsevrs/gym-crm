@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,7 +67,7 @@ public class TrainingServiceImpl implements TrainingService {
     @Transactional
     public TrainingDto createTraining(CreateTrainingDto trainingDto) {
         Trainee trainee = traineeService.findByUsername(trainingDto.getTraineeName()).orElseThrow(
-                ()-> new UserNotFoundException("User not found")
+                ()-> new UserNotFoundException("User not found" + trainingDto.getTraineeName())
         );
         log.info("trainee = {}",trainee);
         Trainer trainer = trainerService.findByUsername(trainingDto.getTrainerName()).orElseThrow(
@@ -103,6 +104,35 @@ public class TrainingServiceImpl implements TrainingService {
     }
 
     @Override
+    public boolean removeTraining(String username, LocalDateTime dateTime) {
+        try {
+            Training training = trainingDao.findTrainingByTrainerAndDate(username,dateTime).orElseThrow(()->
+                    new RuntimeException("training not found"));
+
+            var workloadRequest = new TrainerWorkloadRequest(
+                    training.getTrainee().getUsername(),
+                    training.getTrainee().getFirstName(),
+                    training.getTrainee().getLastName(),
+                    training.getTrainee().getIsActive(),
+                    training.getTrainingDate(),
+                    training.getDuration(),
+                    TrainerWorkloadRequest.ActionType.DELETE);
+            log.info("workload request = {}",workloadRequest);
+
+            log.info("Sending workload DELETE event: {}", workloadRequest);
+            workloadClient.createWorkloadEvent(workloadRequest);
+
+            trainingDao.remove(training.getId());
+            log.info("Training for trainer '{}' at '{}' removed successfully", username, dateTime);
+            return true;
+
+        }catch (Exception e){
+            log.error("Error removing training for username {} and date {}: {}", username, dateTime, e.getMessage(), e);
+            return false;
+        }
+    }
+
+    @Override
     @Transactional
     public Training create(Training entity) {
         return trainingDao.save(entity);
@@ -117,6 +147,5 @@ public class TrainingServiceImpl implements TrainingService {
     public Optional<Training> findById(Long aLong) {
         return trainingDao.findById(aLong);
     }
-
 
 }
