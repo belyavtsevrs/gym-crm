@@ -14,6 +14,7 @@ import com.epam.gymcore.domain.mapper.TrainerMapper;
 import com.epam.gymcore.domain.mapper.TrainingMapper;
 import com.epam.gymcore.service.TraineeService;
 import com.epam.gymcore.util.UserUtil;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -49,6 +50,7 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee> implements 
 
 
     @Override
+    @CircuitBreaker(name = "gym-security", fallbackMethod = "registerFallback")
     public UserDto register(TraineeRegistrationDto dto) {
         Trainee newTrainee = traineeMapper.toEntity(dto);
         newTrainee.setRole(Roles.ROLE_TRAINEE);
@@ -171,7 +173,6 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee> implements 
         return trainingDtoList;
     }
 
-
     @Override
     public Boolean changeStatus(String username, Boolean isActive) {
         Trainee trainee = dao.findByUsername(username).orElseThrow(()->
@@ -180,5 +181,12 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee> implements 
         trainee.setIsActive(isActive);
         dao.save(trainee);
         return true;
+    }
+
+    private UserDto registerFallback(TraineeRegistrationDto dto, Throwable t) {
+        log.warn("Fallback triggered for register(): {}", t.getMessage());
+        UserDto fallbackUser = new UserDto(dto.getFirstName(), dto.getLastName());
+        log.info("Returning fallback user = {}", fallbackUser);
+        return fallbackUser;
     }
 }

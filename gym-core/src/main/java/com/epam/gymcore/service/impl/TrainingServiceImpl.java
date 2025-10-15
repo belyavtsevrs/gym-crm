@@ -3,10 +3,7 @@ package com.epam.gymcore.service.impl;
 import com.epam.gymcore.client.WorkloadClient;
 import com.epam.gymcore.dao.TrainingDao;
 import com.epam.gymcore.dao.TrainingTypeDao;
-import com.epam.gymcore.domain.dto.CreateTrainingDto;
-import com.epam.gymcore.domain.dto.TrainerWorkloadRequest;
-import com.epam.gymcore.domain.dto.TrainingDto;
-import com.epam.gymcore.domain.dto.TrainingTypeDto;
+import com.epam.gymcore.domain.dto.*;
 import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.domain.entity.Training;
@@ -17,11 +14,11 @@ import com.epam.gymcore.domain.mapper.TrainingTypeMapper;
 import com.epam.gymcore.service.TraineeService;
 import com.epam.gymcore.service.TrainerService;
 import com.epam.gymcore.service.TrainingService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -65,6 +62,7 @@ public class TrainingServiceImpl implements TrainingService {
 
     @Override
     @Transactional
+    @CircuitBreaker(name = "workloadService", fallbackMethod = "createTrainingEvent")
     public TrainingDto createTraining(CreateTrainingDto trainingDto) {
         Trainee trainee = traineeService.findByUsername(trainingDto.getTraineeName()).orElseThrow(
                 ()-> new UserNotFoundException("User not found" + trainingDto.getTraineeName())
@@ -92,6 +90,7 @@ public class TrainingServiceImpl implements TrainingService {
                 newTraining.getTrainingDate(),
                 newTraining.getDuration(),
                 TrainerWorkloadRequest.ActionType.ADD);
+        log.info("training request = {}",workloadRequest);
 
         workloadClient.createWorkloadEvent(workloadRequest);
 
@@ -104,16 +103,17 @@ public class TrainingServiceImpl implements TrainingService {
     }
 
     @Override
+    @CircuitBreaker(name = "workloadService", fallbackMethod = "removeTrainingFallback")
     public boolean removeTraining(String username, LocalDateTime dateTime) {
         try {
             Training training = trainingDao.findTrainingByTrainerAndDate(username,dateTime).orElseThrow(()->
                     new RuntimeException("training not found"));
 
             var workloadRequest = new TrainerWorkloadRequest(
-                    training.getTrainee().getUsername(),
-                    training.getTrainee().getFirstName(),
-                    training.getTrainee().getLastName(),
-                    training.getTrainee().getIsActive(),
+                    training.getTrainer().getUsername(),
+                    training.getTrainer().getFirstName(),
+                    training.getTrainer().getLastName(),
+                    training.getTrainer().getIsActive(),
                     training.getTrainingDate(),
                     training.getDuration(),
                     TrainerWorkloadRequest.ActionType.DELETE);
@@ -148,4 +148,13 @@ public class TrainingServiceImpl implements TrainingService {
         return trainingDao.findById(aLong);
     }
 
+    private TrainingDto createTrainingEvent(CreateTrainingDto dto, Throwable t) {
+        log.warn("Fallback triggered for createTraining(): {}", t.getMessage());
+        return new TrainingDto();
+    }
+
+    private boolean removeTrainingFallback(String username, LocalDateTime dateTime, Throwable t) {
+        log.warn("Fallback triggered for removeTraining(): {}", t.getMessage());
+        return false;
+    }
 }

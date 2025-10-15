@@ -7,7 +7,7 @@ import java.time.Month;
 
 @Getter
 @Setter
-@ToString(exclude = "workloadRef")
+@ToString(exclude = "yearsRef")
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -21,7 +21,7 @@ public class Months{
     private Long workload;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workload_id")
-    private Workload workloadRef;
+    private Years yearsRef;
 
     public Months(Month month,Long workload) {
         this.month = month;

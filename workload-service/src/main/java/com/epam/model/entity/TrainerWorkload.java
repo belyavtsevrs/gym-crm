@@ -11,7 +11,7 @@ import java.util.Objects;
 
 @Setter
 @Getter
-@ToString
+@ToString(exclude = "years")
 @Entity
 public class TrainerWorkload {
     @Id
@@ -27,7 +27,7 @@ public class TrainerWorkload {
             orphanRemoval = true,
             fetch = FetchType.EAGER
     )
-    private List<Workload> years = new ArrayList<>();
+    private List<Years> years = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {

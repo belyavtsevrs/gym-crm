@@ -6,9 +6,11 @@ import com.epam.model.dto.TrainerWorkloadResponse;
 import com.epam.model.dto.YearResponse;
 import com.epam.model.entity.Months;
 import com.epam.model.entity.TrainerWorkload;
-import com.epam.model.entity.Workload;
+import com.epam.model.entity.Years;
 import com.epam.model.mapper.WorkloadReqMapper;
+import com.epam.repository.MonthRepository;
 import com.epam.repository.WorkloadRepository;
+import com.epam.repository.YearRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,11 +25,17 @@ import java.util.List;
 public class WorkloadServiceImpl implements WorkloadService {
     private final WorkloadRepository workloadRepository;
     private final WorkloadReqMapper workloadReqMapper;
+    private final MonthRepository monthRepository;
+    private final YearRepository yearRepository;
 
     public WorkloadServiceImpl(WorkloadRepository workloadRepository,
-                               WorkloadReqMapper workloadReqMapper) {
+                               WorkloadReqMapper workloadReqMapper,
+                               MonthRepository monthRepository,
+                               YearRepository yearRepository) {
         this.workloadRepository = workloadRepository;
         this.workloadReqMapper = workloadReqMapper;
+        this.monthRepository = monthRepository;
+        this.yearRepository = yearRepository;
     }
 
     @Override
@@ -77,6 +85,47 @@ public class WorkloadServiceImpl implements WorkloadService {
     }
 
     private boolean removeWorkloadEvent(TrainerWorkloadRequest wr){
+        TrainerWorkload trainer = workloadRepository.findByTrainerUsername(wr.trainerUsername())
+                .orElseThrow(() -> new IllegalArgumentException("Trainer not found: " + wr.trainerUsername()));
+
+        Years years = yearRepository.findYearByWorkloadYearAndTrainerWorkload(
+                wr.trainingDate().getYear(), trainer
+        );
+        if (years == null) {
+            log.warn("No workload year {} for trainer {}", wr.trainingDate().getYear(), wr.trainerUsername());
+            return false;
+        }
+
+        Months month = monthRepository.findMonthsByMonthAndYearsRef(
+                wr.trainingDate().getMonth(), years
+        );
+        if (month == null) {
+            log.warn("No month {} found for trainer {}", wr.trainingDate().getMonth(), wr.trainerUsername());
+            return false;
+        }
+
+        long newWorkload = month.getWorkload() - wr.duration().toHours();
+        if (newWorkload <= 0) {
+            years.getMonths().remove(month);
+            monthRepository.delete(month);
+            log.info("Removed month {} for trainer {}", wr.trainingDate().getMonth(), wr.trainerUsername());
+        } else {
+            month.setWorkload(newWorkload);
+            monthRepository.save(month);
+            log.info("Updated month {} workload for trainer {} → {}", wr.trainingDate().getMonth(), wr.trainerUsername(), newWorkload);
+        }
+
+        if (years.getMonths().isEmpty()) {
+            trainer.getYears().remove(years);
+            yearRepository.delete(years);
+            log.info("Removed year {} for trainer {}", wr.trainingDate().getYear(), wr.trainerUsername());
+        }
+
+        if (trainer.getYears().isEmpty()) {
+            workloadRepository.delete(trainer);
+            log.info("Removed trainer workload {} because all years are empty", wr.trainerUsername());
+        }
+
         return true;
     }
 
@@ -95,24 +144,24 @@ public class WorkloadServiceImpl implements WorkloadService {
         Month monthValue = wr.trainingDate().getMonth();
         long durationHours = wr.duration().toHours();
 
-        Workload year = trainer.getYears().stream()
+        Years years = trainer.getYears().stream()
                 .filter(x -> x.getWorkloadYear() == yearValue)
                 .findFirst()
                 .orElseGet(() -> {
-                    Workload newYear = new Workload();
-                    newYear.setWorkloadYear(yearValue);
-                    newYear.setTrainerWorkload(trainer);
-                    trainer.getYears().add(newYear);
-                    return newYear;
+                    Years newYears = new Years();
+                    newYears.setWorkloadYear(yearValue);
+                    newYears.setTrainerWorkload(trainer);
+                    trainer.getYears().add(newYears);
+                    return newYears;
                 });
 
-        Months month = year.getMonths().stream()
+        Months month = years.getMonths().stream()
                 .filter(m -> m.getMonth() == monthValue)
                 .findFirst()
                 .orElseGet(() -> {
                     Months newMonth = new Months(monthValue, 0L);
-                    newMonth.setWorkloadRef(year);
-                    year.getMonths().add(newMonth);
+                    newMonth.setYearsRef(years);
+                    years.getMonths().add(newMonth);
                     return newMonth;
                 });
 

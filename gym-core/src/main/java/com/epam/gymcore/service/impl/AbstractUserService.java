@@ -1,6 +1,8 @@
 package com.epam.gymcore.service.impl;
 
 import com.epam.gymcore.dao.AbstractUserDao;
+import com.epam.gymcore.domain.dto.TraineeRegistrationDto;
+import com.epam.gymcore.domain.dto.UserDto;
 import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Training;
 import com.epam.gymcore.domain.entity.User;
@@ -92,4 +94,5 @@ public abstract class AbstractUserService<E extends User>
     public List<Training> getUsersByUsernameAndCriteria(String username, LocalDateTime from, LocalDateTime to) {
         return dao.getUsersByUsernameAndCriteria(username,from,to);
     }
+
 }

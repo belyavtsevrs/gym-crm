@@ -16,6 +16,7 @@ import com.epam.gymcore.domain.mapper.TrainingTypeMapper;
 import com.epam.gymcore.service.TrainerService;
 import com.epam.gymcore.service.TrainingService;
 import com.epam.gymcore.util.UserUtil;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,6 +51,7 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer> implements 
     }
 
     @Transactional
+    @CircuitBreaker(name = "gym-security", fallbackMethod = "registerFallback")
     public UserDto register(TrainerRegistrationDto dto) {
         Trainer trainer = trainerMapper.toEntity(dto);
         log.info("(TrainerServiceImpl) newTrainer after mapping = {}", trainer);
@@ -156,7 +158,6 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer> implements 
         return trainingDtoList;
     }
 
-
     @Override
     public Boolean changeStatus(String username, Boolean isActive) {
         Trainer trainer = dao.findByUsername(username).orElseThrow(()->
@@ -164,5 +165,12 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer> implements 
         );
         trainer.setIsActive(isActive);
         return true;
+    }
+
+    private UserDto registerFallback(TrainerRegistrationDto dto, Throwable t) {
+        log.warn("Fallback triggered for register(): {}", t.getMessage());
+        UserDto fallbackUser = new UserDto(dto.getFirstName(), dto.getLastName());
+        log.info("Returning fallback user = {}", fallbackUser);
+        return fallbackUser;
     }
 }

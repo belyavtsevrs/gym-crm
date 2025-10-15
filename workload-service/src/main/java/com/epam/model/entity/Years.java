@@ -13,7 +13,7 @@ import java.util.Objects;
 @ToString(exclude = "trainerWorkload")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Workload {
+public class Years {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -26,10 +26,10 @@ public class Workload {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Workload workload)) return false;
-        return Objects.equals(id, workload.id)
-                && Objects.equals(workloadYear, workload.workloadYear)
-                && Objects.equals(trainerWorkload, workload.trainerWorkload);
+        if (!(o instanceof Years years)) return false;
+        return Objects.equals(id, years.id)
+                && Objects.equals(workloadYear, years.workloadYear)
+                && Objects.equals(trainerWorkload, years.trainerWorkload);
     }
 
     @Override
