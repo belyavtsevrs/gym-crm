@@ -4,44 +4,24 @@ server:
 spring:
   application:
     name: gym-core
-  datasource:
-    url: jdbc:postgresql://localhost:5430/gym_crm
-    username: root
-    password: root
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8081
-  workload:
-    service:
-      name: workload-service
-      url: http://localhost:8083
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
+
 management:
-  endpoint:
-    health:
-      show-details: always
-      show-components: always
   endpoints:
     web:
       exposure:
         include: prometheus,health,mappings
+  endpoint:
+    prometheus:
+      access: unrestricted
   prometheus:
     metrics:
       export:
         enabled: true
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
 resilience4j:
   circuitbreaker:
     instances:
@@ -57,6 +37,7 @@ resilience4j:
         failure-rate-threshold: 50
         wait-duration-in-open-state: 10s
         automatic-transition-from-open-to-half-open-enabled: true
+
 feign:
   circuitbreaker:
     enabled: true

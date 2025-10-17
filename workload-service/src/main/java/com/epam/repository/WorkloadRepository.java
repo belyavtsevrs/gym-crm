@@ -8,6 +8,5 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface WorkloadRepository extends JpaRepository<TrainerWorkload,Long> {
-
     Optional<TrainerWorkload> findByTrainerUsername(String trainerUsername);
 }

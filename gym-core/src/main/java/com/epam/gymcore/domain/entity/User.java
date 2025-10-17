@@ -24,8 +24,6 @@ public abstract class User extends AbstractEntity {
     protected Boolean isActive;
     @Enumerated(EnumType.STRING)
     protected Roles role;
-    protected Boolean isLocked = false;
-    protected Integer failedAttempt = 0;
 
     public User(String firstName, String lastName, String username, String password, Boolean isActive) {
         this.firstName = firstName;

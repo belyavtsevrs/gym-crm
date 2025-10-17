@@ -18,7 +18,8 @@ public class ResourceServerConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/trainee/register-trainee",
-                                "/api/trainer/register-trainer").permitAll()
+                                "/api/trainer/register-trainer",
+                                "/actuator", "/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 ->

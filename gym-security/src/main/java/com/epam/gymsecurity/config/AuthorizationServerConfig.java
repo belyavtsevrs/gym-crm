@@ -34,8 +34,8 @@ public class AuthorizationServerConfig {
     @Order(1)
     public SecurityFilterChain authServerSecurityFilterChain(HttpSecurity http) throws Exception {
         var authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
-        http.securityMatcher("/oauth2/**",
-                        "/.well-known/**")
+        http.securityMatcher(
+                "/oauth2/**", "/.well-known/**","/actuator", "/actuator/**")
                 .with(authorizationServerConfigurer, config ->
                         config.oidc(Customizer.withDefaults()));
         http.oauth2ResourceServer(oauth2 ->

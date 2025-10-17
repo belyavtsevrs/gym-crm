@@ -11,8 +11,7 @@ import java.util.Objects;
 @Getter
 @Entity
 @ToString(exclude = "trainerWorkload")
-@AllArgsConstructor
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class Years {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -27,13 +26,17 @@ public class Years {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Years years)) return false;
-        return Objects.equals(id, years.id)
-                && Objects.equals(workloadYear, years.workloadYear)
-                && Objects.equals(trainerWorkload, years.trainerWorkload);
+        return Objects.equals(workloadYear, years.workloadYear);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(workloadYear, trainerWorkload);
+        return Objects.hash(workloadYear);
+    }
+
+    public Years(Long id, Integer workloadYear, List<Months> months) {
+        this.id = id;
+        this.workloadYear = workloadYear;
+        this.months = months;
     }
 }

@@ -21,19 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-@Service
 public class WorkloadServiceImpl implements WorkloadService {
     private final WorkloadRepository workloadRepository;
-    private final WorkloadReqMapper workloadReqMapper;
     private final MonthRepository monthRepository;
     private final YearRepository yearRepository;
 
-    public WorkloadServiceImpl(WorkloadRepository workloadRepository,
-                               WorkloadReqMapper workloadReqMapper,
-                               MonthRepository monthRepository,
-                               YearRepository yearRepository) {
+    public WorkloadServiceImpl(WorkloadRepository workloadRepository, MonthRepository monthRepository, YearRepository yearRepository) {
         this.workloadRepository = workloadRepository;
-        this.workloadReqMapper = workloadReqMapper;
         this.monthRepository = monthRepository;
         this.yearRepository = yearRepository;
     }
@@ -84,7 +78,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         return workloadResponse;
     }
 
-    private boolean removeWorkloadEvent(TrainerWorkloadRequest wr){
+    public boolean removeWorkloadEvent(TrainerWorkloadRequest wr){
         TrainerWorkload trainer = workloadRepository.findByTrainerUsername(wr.trainerUsername())
                 .orElseThrow(() -> new IllegalArgumentException("Trainer not found: " + wr.trainerUsername()));
 
@@ -129,7 +123,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         return true;
     }
 
-    private boolean addWorkloadEvent(TrainerWorkloadRequest wr) {
+    public boolean addWorkloadEvent(TrainerWorkloadRequest wr) {
         TrainerWorkload trainer = workloadRepository.findByTrainerUsername(wr.trainerUsername())
                 .orElseGet(()->{
                     TrainerWorkload newTrainer = new TrainerWorkload();
