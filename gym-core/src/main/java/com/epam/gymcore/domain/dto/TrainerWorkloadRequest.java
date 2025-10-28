@@ -1,5 +1,6 @@
 package com.epam.gymcore.domain.dto;
 
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -9,9 +10,9 @@ public record TrainerWorkloadRequest (
         String trainerLastname,
         Boolean isActive,
         LocalDateTime trainingDate,
-        Duration duration,
+        Long duration,
         ActionType actionType
-){
+) implements Serializable {
     public enum ActionType{
         ADD,DELETE;
     }

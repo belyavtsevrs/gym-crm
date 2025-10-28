@@ -23,7 +23,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public Map<String, Object> createUser(@RequestBody RegisterRequest r) {
-        Long userId = userService.register(r.username(), r.password(), r.role());
+        Long userId = userService.register(new RegisterRequest(r.username(),r.password(),r.role()));
         return Map.of("userId", userId);
     }
 

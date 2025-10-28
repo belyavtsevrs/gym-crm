@@ -9,6 +9,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+  artemis:
+    broker-url: tcp://localhost:61612
+    user: root
+    password: root
   data:
     redis:
       host: localhost

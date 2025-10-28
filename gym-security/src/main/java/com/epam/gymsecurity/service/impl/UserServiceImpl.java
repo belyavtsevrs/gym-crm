@@ -1,10 +1,13 @@
 package com.epam.gymsecurity.service.impl;
 
+import com.epam.gymsecurity.domain.dto.RegisterRequest;
 import com.epam.gymsecurity.domain.entity.User;
 import com.epam.gymsecurity.repostiory.UserRepository;
 import com.epam.gymsecurity.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jms.annotation.JmsListener;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +19,15 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder encoder;
 
     @Override
-    public Long register(String username, String password, String role) {
-        if (userRepository.existsByUsername(username))
+    @SendTo("")
+    @JmsListener(destination = "registration.queue")
+    public Long register(RegisterRequest request) {
+        if (userRepository.existsByUsername(request.username()))
             throw new IllegalStateException("username taken");
         User u = new User();
-        u.setUsername(username);
-        u.setPassword(encoder.encode(password));
-        u.setRole(role);
+        u.setUsername(request.username());
+        u.setPassword(encoder.encode(request.password()));
+        u.setRole(request.role());
         log.info("user = {}",u);
         return userRepository.save(u).getId();
     }

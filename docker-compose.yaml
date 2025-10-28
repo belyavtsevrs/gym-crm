@@ -1,9 +1,9 @@
-version: '3.8'
+version: "3.9"
 
 services:
   gym-core-db:
     container_name: gym-core-postgres
-    image: postgres:latest
+    image: postgres:16
     restart: always
     shm_size: 128mb
     ports:
@@ -15,7 +15,7 @@ services:
 
   gym-security-db:
     container_name: gym-security-postgres
-    image: postgres:latest
+    image: postgres:16
     restart: always
     shm_size: 128mb
     ports:
@@ -31,11 +31,15 @@ services:
     restart: always
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: [ "redis-server", "--appendonly", "yes" ]
+    command: ["redis-server","--appendonly","yes"]
 
-volumes:
-  gym_core_data:
-  gym_security_data:
-  redis_data:
+  activemq: 
+    image: apache/activemq-artemis:latest-alpine
+    container_name: activemq
+    restart: always
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+    environment:
+      ARTEMIS_USER: root
+      ARTEMIS_PASSWORD: root

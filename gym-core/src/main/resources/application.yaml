@@ -5,6 +5,11 @@ spring:
   application:
     name: gym-core
 
+  artemis:
+    broker-url: tcp://localhost:61612
+    user: root
+    password: root
+
 management:
   endpoints:
     web:

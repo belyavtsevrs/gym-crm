@@ -1,10 +1,8 @@
 package com.epam.gymcore.service.impl;
 
-import com.epam.gymcore.client.AuthClient;
 import com.epam.gymcore.dao.AbstractUserDao;
 import com.epam.gymcore.dao.TrainingTypeDao;
 import com.epam.gymcore.domain.dto.*;
-import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.domain.entity.Training;
 import com.epam.gymcore.domain.entity.TrainingType;
@@ -14,12 +12,11 @@ import com.epam.gymcore.domain.mapper.TrainerMapper;
 import com.epam.gymcore.domain.mapper.TrainingMapper;
 import com.epam.gymcore.domain.mapper.TrainingTypeMapper;
 import com.epam.gymcore.service.TrainerService;
-import com.epam.gymcore.service.TrainingService;
 import com.epam.gymcore.util.UserUtil;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -34,20 +31,19 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer> implements 
     private final TrainerMapper trainerMapper;
     private final TrainingTypeMapper trainingTypeMapper;
     private final TrainingMapper trainingMapper;
-    private final AuthClient authClient;
-
+    private final JmsTemplate jmsTemplate;
     protected TrainerServiceImpl(AbstractUserDao<Trainer> dao,
                                  TrainingTypeDao trainingTypeDao,
                                  TrainerMapper trainerMapper,
                                  TrainingTypeMapper trainingTypeMapper,
                                  TrainingMapper trainingMapper,
-                                 AuthClient authClient) {
+                                 JmsTemplate jmsTemplate) {
         super(dao);
         this.trainingTypeDao = trainingTypeDao;
         this.trainerMapper = trainerMapper;
         this.trainingTypeMapper = trainingTypeMapper;
         this.trainingMapper = trainingMapper;
-        this.authClient = authClient;
+        this.jmsTemplate = jmsTemplate;
     }
 
     @Transactional
@@ -81,17 +77,14 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer> implements 
         }
 
         RegisterRequest request = new RegisterRequest(generatedUsername,generatedPassword,trainer.getRole().name());
-        var res = authClient.createUser(request);
-
-        log.info("(TrainerServiceImpl) = {}",res);
-        Long userId = ((Number) res.get("userId")).longValue();
-
-        trainer.setUsername(generatedUsername);
-        trainer.setPassword(generatedPassword);
-        trainer.setUserId(userId);
 
         Trainer saved = super.create(trainer);
         log.info("(TrainerServiceImpl) new trainer is registered = {}", saved);
+        trainer.setUsername(generatedUsername);
+        trainer.setPassword(generatedPassword);
+        trainer.setUserId(saved.getUserId());
+
+        jmsTemplate.convertAndSend("registration.queue",request);
 
         return new UserDto(saved.getFirstName(), saved.getLastName());
     }

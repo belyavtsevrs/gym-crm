@@ -27,10 +27,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.Year;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,29 +59,6 @@ public class WorkloadServiceTest {
                 "",
                 true, LocalDateTime.now(), Duration.ofHours(1), TrainerWorkloadRequest.ActionType.DELETE
         );
-    }
-
-    @Test
-    void workloadEvent_whenAddAction_thenReturnAdd(){
-        TrainerWorkload workload = new TrainerWorkload();
-        workload.setTrainerUsername(add.trainerUsername());
-
-        String result = workloadService.workloadEvent(add);
-
-        assertEquals("ADD", result);
-    }
-
-    @Test
-    void workloadEvent_whenDeleteAction_thenReturn(){
-        TrainerWorkload workload = new TrainerWorkload();
-        workload.setTrainerUsername(add.trainerUsername());
-
-        when(workloadRepository.findByTrainerUsername("trainer"))
-                .thenReturn(Optional.of(workload));
-
-        String result = workloadService.workloadEvent(delete);
-
-        assertEquals("DELETE", result);
     }
 
     @ParameterizedTest(name = "workloadResponse_source")
@@ -137,4 +111,64 @@ public class WorkloadServiceTest {
         verify(workloadRepository).save(any());
     }
 
+    @Test
+    void removeWorkloadEvent_shouldRemoveTrainerWorkload_returnTrue(){
+        TrainerWorkload tw = new TrainerWorkload();
+        tw.setTrainerUsername(delete.trainerUsername());
+        tw.setYears(List.of(new Years(1l,2025,List.of(new Months(Month.OCTOBER,3l)))));
+
+        Years years = tw.getYears().get(0);
+        Month month = years.getMonths().get(0).getMonth();
+        int year = tw.getYears().get(0).getWorkloadYear();
+        String username = tw.getTrainerUsername();
+
+        when(workloadRepository.findByTrainerUsername(username)).thenReturn(Optional.of(tw));
+        when(yearRepository.findYearByWorkloadYearAndTrainerWorkload(year,tw)).thenReturn(years);
+        when(monthRepository.findMonthsByMonthAndYearsRef(month,years)).thenReturn(years.getMonths().get(0));
+
+        boolean res = workloadService.removeWorkloadEvent(delete);
+
+        assertTrue(res);
+        verify(monthRepository).save(any());
+    }
+
+    @Test
+    void removeWorkloadEvent_shouldRemoveMonth_returnTrue(){
+        TrainerWorkload tw = new TrainerWorkload();
+        tw.setTrainerUsername(delete.trainerUsername());
+
+        Months october = new Months(Month.OCTOBER, 1L);
+        Years years = new Years(1L, 2025, new ArrayList<>(List.of(october)));
+        tw.setYears(new ArrayList<>(List.of(years)));
+
+        int year = years.getWorkloadYear();
+        String username = tw.getTrainerUsername();
+
+        when(workloadRepository.findByTrainerUsername(username)).thenReturn(Optional.of(tw));
+        when(yearRepository.findYearByWorkloadYearAndTrainerWorkload(year, tw)).thenReturn(years);
+        when(monthRepository.findMonthsByMonthAndYearsRef(Month.OCTOBER, years)).thenReturn(october);
+
+        boolean res = workloadService.removeWorkloadEvent(delete);
+
+        assertTrue(res);
+        verify(monthRepository).delete(any());
+    }
+
+    @Test
+    void removeWorkloadEvent_emptyYears_returnFalse(){
+        TrainerWorkload tw = new TrainerWorkload();
+        tw.setTrainerUsername(delete.trainerUsername());
+        tw.setYears(List.of(new Years(1l,2025,List.of(new Months(Month.OCTOBER,1l)))));
+
+        Years years = tw.getYears().get(0);
+        int year = tw.getYears().get(0).getWorkloadYear();
+        String username = tw.getTrainerUsername();
+
+        when(workloadRepository.findByTrainerUsername(username)).thenReturn(Optional.of(tw));
+        when(yearRepository.findYearByWorkloadYearAndTrainerWorkload(year,tw)).thenReturn(years);
+
+        boolean res = workloadService.removeWorkloadEvent(delete);
+
+        assertFalse(res);
+    }
 }

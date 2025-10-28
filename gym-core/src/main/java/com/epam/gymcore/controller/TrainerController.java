@@ -1,13 +1,18 @@
 package com.epam.gymcore.controller;
 
-import com.epam.gymcore.client.WorkloadClient;
 import com.epam.gymcore.controller.api.TrainerApi;
 import com.epam.gymcore.domain.dto.*;
 import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.service.TrainerService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.TextMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,13 +24,13 @@ import java.util.List;
 @RequestMapping("/api/trainer/")
 public class TrainerController implements TrainerApi {
     private final TrainerService trainerService;
-    private final WorkloadClient workloadClient;
+    private final JmsTemplate jmsTemplate;
 
     public TrainerController(TrainerService trainerService,
-                              WorkloadClient workloadClient
+                             JmsTemplate jmsTemplate
     ) {
         this.trainerService = trainerService;
-        this.workloadClient = workloadClient;
+        this.jmsTemplate = jmsTemplate;
     }
 
     @Override
@@ -80,14 +85,22 @@ public class TrainerController implements TrainerApi {
 
     @GetMapping("/{username}/trainer-workload")
     public ResponseEntity<TrainerWorkloadResponse> workloadResponse(
-            @PathVariable("username") String username) {
+            @PathVariable("username") String username) throws JsonProcessingException, JMSException {
         log.info("Fetching workload for trainer: {}", username);
 
         if (username == null || username.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must not be empty");
         }
 
-        TrainerWorkloadResponse response = workloadClient.trainerWorkload(username);
+        Message reply = jmsTemplate.sendAndReceive("workload.request.queue", session -> {
+            TextMessage msg = session.createTextMessage(username);
+            return msg;
+        });
+
+        String json = ((TextMessage) reply).getText();
+        ObjectMapper mapper = new ObjectMapper();
+        TrainerWorkloadResponse response = mapper.readValue(json, TrainerWorkloadResponse.class);
+
         return ResponseEntity.ok(response);
     }
 

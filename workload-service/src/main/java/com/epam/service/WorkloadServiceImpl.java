@@ -13,6 +13,9 @@ import com.epam.repository.WorkloadRepository;
 import com.epam.repository.YearRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jms.annotation.JmsListener;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -21,19 +24,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
+@Service
 public class WorkloadServiceImpl implements WorkloadService {
     private final WorkloadRepository workloadRepository;
     private final MonthRepository monthRepository;
     private final YearRepository yearRepository;
+    private final JmsTemplate jmsTemplate;
 
-    public WorkloadServiceImpl(WorkloadRepository workloadRepository, MonthRepository monthRepository, YearRepository yearRepository) {
+    public WorkloadServiceImpl(WorkloadRepository workloadRepository,
+                               MonthRepository monthRepository,
+                               YearRepository yearRepository,
+                               JmsTemplate jmsTemplate) {
         this.workloadRepository = workloadRepository;
         this.monthRepository = monthRepository;
         this.yearRepository = yearRepository;
+        this.jmsTemplate = jmsTemplate;
     }
 
     @Override
     @Transactional
+    @SendTo("workloadEvent.response.queue")
+    @JmsListener(destination = "workloadEvent.queue")
     public String workloadEvent(TrainerWorkloadRequest wr) {
         log.info("(workloadEvent) new event = {}",wr);
 
@@ -46,6 +57,7 @@ public class WorkloadServiceImpl implements WorkloadService {
     }
 
     @Override
+    @JmsListener(destination = "workload.request.queue")
     public TrainerWorkloadResponse workloadResponse(String username) {
         TrainerWorkload workload = workloadRepository.findByTrainerUsername(username).orElseThrow(()->
                 new UsernameNotFoundException(String.format("Wokload for trainer with %s username not found",username)));
@@ -74,7 +86,6 @@ public class WorkloadServiceImpl implements WorkloadService {
                         yearResponses
                 );
         log.info("(TrainerWorkloadResponse) : TrainerWorkloadResponse = {}",workloadResponse);
-
         return workloadResponse;
     }
 
@@ -98,7 +109,7 @@ public class WorkloadServiceImpl implements WorkloadService {
             return false;
         }
 
-        long newWorkload = month.getWorkload() - wr.duration().toHours();
+        long newWorkload = month.getWorkload() - wr.duration();
         if (newWorkload <= 0) {
             years.getMonths().remove(month);
             monthRepository.delete(month);
@@ -136,7 +147,7 @@ public class WorkloadServiceImpl implements WorkloadService {
 
         int yearValue = wr.trainingDate().getYear();
         Month monthValue = wr.trainingDate().getMonth();
-        long durationHours = wr.duration().toHours();
+        long durationHours = wr.duration();
 
         Years years = trainer.getYears().stream()
                 .filter(x -> x.getWorkloadYear() == yearValue)

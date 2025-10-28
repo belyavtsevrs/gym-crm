@@ -1,6 +1,5 @@
 package com.epam.gymcore.service.impl;
 
-import com.epam.gymcore.client.WorkloadClient;
 import com.epam.gymcore.dao.TrainingDao;
 import com.epam.gymcore.dao.TrainingTypeDao;
 import com.epam.gymcore.domain.dto.*;
@@ -17,6 +16,7 @@ import com.epam.gymcore.service.TrainingService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -32,22 +32,20 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingTypeDao trainingTypeDao;
     private final TrainingMapper trainingMapper;
     private final TrainingTypeMapper trainingTypeMapper;
-    private final WorkloadClient workloadClient;
-
+    private final JmsTemplate jmsTemplate;
     public TrainingServiceImpl(TrainingDao trainingDao,
                                TraineeService traineeService,
                                TrainerService trainerService,
                                TrainingTypeDao trainingTypeDao,
                                TrainingMapper trainingMapper,
-                               TrainingTypeMapper trainingTypeMapper,
-                               WorkloadClient workloadClient) {
+                               TrainingTypeMapper trainingTypeMapper,  JmsTemplate jmsTemplate) {
         this.trainingDao = trainingDao;
         this.traineeService = traineeService;
         this.trainerService = trainerService;
         this.trainingTypeDao = trainingTypeDao;
         this.trainingMapper = trainingMapper;
         this.trainingTypeMapper = trainingTypeMapper;
-        this.workloadClient = workloadClient;
+        this.jmsTemplate = jmsTemplate;
     }
 
     @Override
@@ -88,12 +86,11 @@ public class TrainingServiceImpl implements TrainingService {
                 trainer.getLastName(),
                 trainer.getIsActive(),
                 newTraining.getTrainingDate(),
-                newTraining.getDuration(),
+                newTraining.getDuration().toHours(),
                 TrainerWorkloadRequest.ActionType.ADD);
         log.info("training request = {}",workloadRequest);
-
-        workloadClient.createWorkloadEvent(workloadRequest);
-
+        jmsTemplate.convertAndSend("workloadEvent.queue",workloadRequest);
+        
         return trainingMapper.toDto(save,save.getTrainingType(),save.getTrainee());
     }
 
@@ -115,12 +112,12 @@ public class TrainingServiceImpl implements TrainingService {
                     training.getTrainer().getLastName(),
                     training.getTrainer().getIsActive(),
                     training.getTrainingDate(),
-                    training.getDuration(),
+                    training.getDuration().toHours(),
                     TrainerWorkloadRequest.ActionType.DELETE);
             log.info("workload request = {}",workloadRequest);
 
             log.info("Sending workload DELETE event: {}", workloadRequest);
-            workloadClient.createWorkloadEvent(workloadRequest);
+            jmsTemplate.convertAndSend("workload.queue",workloadRequest);
 
             trainingDao.remove(training.getId());
             log.info("Training for trainer '{}' at '{}' removed successfully", username, dateTime);

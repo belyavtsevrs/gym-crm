@@ -8,7 +8,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients(basePackages = "com.epam.gymcore.client")
 public class GymCoreApplication {
 
     public static void main(String[] args) {
