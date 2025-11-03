@@ -91,11 +91,11 @@ public class TrainerController implements TrainerApi {
         if (username == null || username.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must not be empty");
         }
+        jmsTemplate.setReceiveTimeout(5000);
+        Message reply = jmsTemplate.sendAndReceive("workload.request.queue",
+                session -> session.createTextMessage(username));
 
-        Message reply = jmsTemplate.sendAndReceive("workload.request.queue", session -> {
-            TextMessage msg = session.createTextMessage(username);
-            return msg;
-        });
+        log.info("message = {}",reply);
 
         String json = ((TextMessage) reply).getText();
         ObjectMapper mapper = new ObjectMapper();

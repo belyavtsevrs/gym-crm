@@ -1,7 +1,9 @@
 package com.epam.gymcore.config;
 
 import com.epam.gymcore.domain.dto.RegisterRequest;
+import com.epam.gymcore.domain.dto.TrainerRequest;
 import com.epam.gymcore.domain.dto.TrainerWorkloadRequest;
+import com.epam.gymcore.domain.dto.TrainerWorkloadResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -33,6 +35,8 @@ public class JmsConfig {
         Map<String, Class<?>> mappings = new HashMap<>();
         mappings.put("registerRequest", RegisterRequest.class);
         mappings.put("trainerWorkloadRequest", TrainerWorkloadRequest.class);
+        mappings.put("trainerWorkloadResponse", TrainerWorkloadResponse.class);
+        mappings.put("trainerRequest", TrainerRequest.class);
         converter.setTypeIdMappings(mappings);
 
         return converter;

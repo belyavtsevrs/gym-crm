@@ -8,6 +8,7 @@ import com.epam.model.entity.Months;
 import com.epam.model.entity.TrainerWorkload;
 import com.epam.model.entity.Years;
 import com.epam.model.mapper.WorkloadReqMapper;
+import com.epam.repository.MongoWorkloadRepository;
 import com.epam.repository.MonthRepository;
 import com.epam.repository.WorkloadRepository;
 import com.epam.repository.YearRepository;
@@ -24,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-@Service
+@Service(value = "workloadServiceImpl")
 public class WorkloadServiceImpl implements WorkloadService {
     private final WorkloadRepository workloadRepository;
     private final MonthRepository monthRepository;
@@ -32,6 +33,7 @@ public class WorkloadServiceImpl implements WorkloadService {
     private final JmsTemplate jmsTemplate;
 
     public WorkloadServiceImpl(WorkloadRepository workloadRepository,
+                               MongoWorkloadRepository mongoWorkloadRepository,
                                MonthRepository monthRepository,
                                YearRepository yearRepository,
                                JmsTemplate jmsTemplate) {

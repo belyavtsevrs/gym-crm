@@ -16,6 +16,10 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  data:
+    mongodb:
+      uri: mongodb+srv://belyavtsevrs_db_user:ptIrm3BYWpB26URF@cluster0.nbie75n.mongodb.net/workloadDb?appName=Cluster0
+
 management:
   health:
     refresh:
