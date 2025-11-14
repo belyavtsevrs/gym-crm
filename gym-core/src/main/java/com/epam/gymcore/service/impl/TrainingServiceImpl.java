@@ -33,6 +33,7 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingMapper trainingMapper;
     private final TrainingTypeMapper trainingTypeMapper;
     private final JmsTemplate jmsTemplate;
+
     public TrainingServiceImpl(TrainingDao trainingDao,
                                TraineeService traineeService,
                                TrainerService trainerService,

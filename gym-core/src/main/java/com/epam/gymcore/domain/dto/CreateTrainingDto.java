@@ -3,6 +3,7 @@ package com.epam.gymcore.domain.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CreateTrainingDto {
     @NotBlank

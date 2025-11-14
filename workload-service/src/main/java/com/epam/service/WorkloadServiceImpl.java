@@ -12,6 +12,9 @@ import com.epam.repository.MongoWorkloadRepository;
 import com.epam.repository.MonthRepository;
 import com.epam.repository.WorkloadRepository;
 import com.epam.repository.YearRepository;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.TextMessage;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;
@@ -59,16 +62,25 @@ public class WorkloadServiceImpl implements WorkloadService {
     }
 
     @Override
-    @JmsListener(destination = "workload.request.queue")
     public TrainerWorkloadResponse workloadResponse(String username) {
-        TrainerWorkload workload = workloadRepository.findByTrainerUsername(username).orElseThrow(()->
-                new UsernameNotFoundException(String.format("Wokload for trainer with %s username not found",username)));
-        log.info("(workloadResponse) workload = {}",workload);
+        return null;
+    }
+
+    @JmsListener(destination = "workload.request.queue")
+    @Transactional
+    public TrainerWorkloadResponse workloadResponse(Message message) throws JMSException {
+        String username = ((TextMessage) message).getText();
+        TrainerWorkload workload = workloadRepository.findByTrainerUsername(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(
+                                String.format("Workload for trainer with %s username not found", username)));
+
+        log.info("(workloadResponse) workload = {}", workload);
 
         List<YearResponse> yearResponses = new ArrayList<>();
-        for(var x : workload.getYears()){
+        for (var x : workload.getYears()) {
             List<MonthResponse> monthResponses = new ArrayList<>();
-            for(var y : x.getMonths()){
+            for (var y : x.getMonths()) {
                 monthResponses.add(new MonthResponse(
                         y.getMonth(),
                         y.getWorkload().intValue()
@@ -79,6 +91,7 @@ public class WorkloadServiceImpl implements WorkloadService {
                     monthResponses
             ));
         }
+
         TrainerWorkloadResponse workloadResponse =
                 new TrainerWorkloadResponse(
                         workload.getTrainerUsername(),
@@ -87,7 +100,7 @@ public class WorkloadServiceImpl implements WorkloadService {
                         workload.getIsActive(),
                         yearResponses
                 );
-        log.info("(TrainerWorkloadResponse) : TrainerWorkloadResponse = {}",workloadResponse);
+        log.info("(TrainerWorkloadResponse) : TrainerWorkloadResponse = {}", workloadResponse);
         return workloadResponse;
     }
 

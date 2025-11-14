@@ -30,11 +30,11 @@ public class TrainingController implements TrainingApi {
         }
         return ResponseEntity.ok().build();
     }
-
+    // remove by trainer username
     @DeleteMapping("/{username}/delete")
     public ResponseEntity<Void> deleteTraining(@PathVariable("username")String username,@RequestParam("date")@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date){
         trainingService.removeTraining(username,date);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 
     @Override
@@ -42,6 +42,5 @@ public class TrainingController implements TrainingApi {
     public ResponseEntity<List<TrainingTypeDto>> allTypes() {
         return ResponseEntity.ok(trainingService.typesList());
     }
-
 
 }

@@ -157,6 +157,7 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer> implements 
                 new UserNotFoundException(String.format("User with username %s not found",username))
         );
         trainer.setIsActive(isActive);
+        dao.save(trainer);
         return true;
     }
 

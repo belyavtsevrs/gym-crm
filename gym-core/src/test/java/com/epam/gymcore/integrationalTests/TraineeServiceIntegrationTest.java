@@ -1,10 +1,9 @@
-package com.epam.gymcore;
+package com.epam.gymcore.integrationalTests;
 
 import com.epam.gymcore.dao.TraineeDao;
 import com.epam.gymcore.domain.entity.Trainee;
 import com.epam.gymcore.domain.entity.Training;
 import com.epam.gymcore.service.TraineeService;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -20,6 +19,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@ActiveProfiles("dev")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TraineeServiceIntegrationTest {
 

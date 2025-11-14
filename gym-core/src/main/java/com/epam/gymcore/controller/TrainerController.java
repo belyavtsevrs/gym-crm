@@ -6,6 +6,7 @@ import com.epam.gymcore.domain.entity.Trainer;
 import com.epam.gymcore.service.TrainerService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
@@ -85,21 +86,31 @@ public class TrainerController implements TrainerApi {
 
     @GetMapping("/{username}/trainer-workload")
     public ResponseEntity<TrainerWorkloadResponse> workloadResponse(
-            @PathVariable("username") String username) throws JsonProcessingException, JMSException {
+            @PathVariable("username") String username) throws JMSException {
+
         log.info("Fetching workload for trainer: {}", username);
 
         if (username == null || username.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must not be empty");
         }
+
         jmsTemplate.setReceiveTimeout(5000);
         Message reply = jmsTemplate.sendAndReceive("workload.request.queue",
                 session -> session.createTextMessage(username));
 
-        log.info("message = {}",reply);
+        if (reply == null) {
+            throw new ResponseStatusException(HttpStatus.GATEWAY_TIMEOUT, "No response from workload service");
+        }
 
         String json = ((TextMessage) reply).getText();
-        ObjectMapper mapper = new ObjectMapper();
-        TrainerWorkloadResponse response = mapper.readValue(json, TrainerWorkloadResponse.class);
+        TrainerWorkloadResponse response;
+        try {
+            response = new ObjectMapper()
+                    .registerModule(new JavaTimeModule())
+                    .readValue(json, TrainerWorkloadResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to parse workload response", e);
+        }
 
         return ResponseEntity.ok(response);
     }

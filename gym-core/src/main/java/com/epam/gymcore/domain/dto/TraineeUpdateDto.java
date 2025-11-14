@@ -2,9 +2,11 @@ package com.epam.gymcore.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
+@Setter
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TraineeUpdateDto {

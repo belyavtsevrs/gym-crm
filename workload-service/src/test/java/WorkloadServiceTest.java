@@ -10,8 +10,6 @@ import com.epam.repository.MonthRepository;
 import com.epam.repository.WorkloadRepository;
 import com.epam.repository.YearRepository;
 import com.epam.service.WorkloadServiceImpl;
-import org.joda.time.Days;
-import org.joda.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -51,13 +49,13 @@ public class WorkloadServiceTest {
     @BeforeEach
     public void initData(){
         add = new TrainerWorkloadRequest("trainer", "", "", true,
-                LocalDateTime.now(), Duration.ofHours(1),
+                LocalDateTime.now(), 1,
                 TrainerWorkloadRequest.ActionType.ADD
         );
         delete = new TrainerWorkloadRequest("trainer",
                 "",
                 "",
-                true, LocalDateTime.now(), Duration.ofHours(1), TrainerWorkloadRequest.ActionType.DELETE
+                true, LocalDateTime.now(), 1, TrainerWorkloadRequest.ActionType.DELETE
         );
     }
 
@@ -94,7 +92,7 @@ public class WorkloadServiceTest {
     void addWorkloadEvent_shouldSaveTrainerWorkload() {
         TrainerWorkloadRequest req = new TrainerWorkloadRequest(
                 "trainer", "", "", true,
-                LocalDateTime.now(), Duration.ofHours(1),
+                LocalDateTime.now(), 1,
                 TrainerWorkloadRequest.ActionType.ADD
         );
 
